@@ -7,6 +7,7 @@ const likesRouter = require('./likes');
 const { requireAuth } = require('../middleware/auth');
 
 router.get('/', pets.listPets);
+router.get('/mine', requireAuth, pets.listMyPets);
 router.post('/', requireAuth, pets.createPet);
 router.use('/:id/photos', photosRouter);
 router.use('/:id/interests', petInterests);

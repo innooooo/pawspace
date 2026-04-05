@@ -162,7 +162,70 @@ async function listPets(req, res) {
 
     params.push(PAGE_SIZE, offset);
     const listSql = `
-      SELECT p.*, pp.url AS primary_photo_url
+      SELECT p.*, pp.url AS primary_photo_url,
+        (SELECT COUNT(*)::int FROM pet_likes pl WHERE pl.pet_id = p.id) AS like_count
+      FROM pets p
+      LEFT JOIN pet_photos pp ON pp.pet_id = p.id AND pp.is_primary = true
+      ${whereSql}
+      ORDER BY p.created_at DESC
+      LIMIT $${i++} OFFSET $${i++}
+    `;
+    const { rows } = await pool.query(listSql, params);
+
+    const hasMore = offset + rows.length < total;
+    return ok(res, { pets: rows }, { page, limit: PAGE_SIZE, total, hasMore });
+  } catch (err) {
+    const { status, message } = mapPgError(err);
+    return fail(res, status, message);
+  }
+}
+
+async function listMyPets(req, res) {
+  const species = req.query.species;
+  const adoption_status = req.query.adoption_status;
+  const nairobi_area = req.query.nairobi_area;
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const offset = (page - 1) * PAGE_SIZE;
+
+  const where = ['p.owner_id = $1'];
+  const params = [req.user.id];
+  let i = 2;
+
+  if (species) {
+    if (!SPECIES.includes(species)) {
+      return fail(res, 400, 'Invalid species filter.');
+    }
+    where.push(`p.species = $${i++}`);
+    params.push(species);
+  }
+  if (adoption_status) {
+    if (!ADOPTION_STATUS.includes(adoption_status)) {
+      return fail(res, 400, 'Invalid adoption_status filter.');
+    }
+    where.push(`p.adoption_status = $${i++}`);
+    params.push(adoption_status);
+  }
+  if (nairobi_area) {
+    if (!NAIROBI_AREAS.includes(nairobi_area)) {
+      return fail(res, 400, 'Invalid nairobi_area filter.');
+    }
+    where.push(`p.nairobi_area = $${i++}`);
+    params.push(nairobi_area);
+  }
+
+  const whereSql = `WHERE ${where.join(' AND ')}`;
+
+  try {
+    const countResult = await pool.query(
+      `SELECT COUNT(*)::int AS c FROM pets p ${whereSql}`,
+      params
+    );
+    const total = countResult.rows[0].c;
+
+    params.push(PAGE_SIZE, offset);
+    const listSql = `
+      SELECT p.*, pp.url AS primary_photo_url,
+        (SELECT COUNT(*)::int FROM pet_likes pl WHERE pl.pet_id = p.id) AS like_count
       FROM pets p
       LEFT JOIN pet_photos pp ON pp.pet_id = p.id AND pp.is_primary = true
       ${whereSql}
@@ -308,6 +371,7 @@ async function deletePet(req, res) {
 module.exports = {
   createPet,
   listPets,
+  listMyPets,
   getPet,
   updatePet,
   deletePet,
