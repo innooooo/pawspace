@@ -28,7 +28,7 @@ export function PetCard({ pet }: Props) {
   return (
     <Link
       to={`/pet/${pet.id}`}
-      className="block rounded-2xl border border-stone-200 bg-white overflow-hidden shadow-sm active:scale-[0.99] transition-transform text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+      className="block rounded-2xl border border-stone-200 hover:bg-stone-100 dark:hover:bg-gray-800 overflow-hidden shadow-sm active:scale-[0.99] transition-transform text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
     >
       <div className="aspect-[4/3] bg-stone-100 relative">
         {img ? (
@@ -49,8 +49,8 @@ export function PetCard({ pet }: Props) {
         </div>
       </div>
       <div className="p-4 space-y-1">
-        <h2 className="text-lg font-semibold text-stone-900 leading-tight">{pet.name}</h2>
-        <p className="text-sm text-stone-600">
+        <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-200 leading-tight">{pet.name}</h2>
+        <p className="text-sm text-stone-600 dark:text-stone-100">
           {pet.breed || pet.species} · {pet.nairobi_area}
         </p>
         <p className="text-sm text-stone-500">

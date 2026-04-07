@@ -25,17 +25,17 @@ export default function Feed() {
   return (
     <div className="space-y-6 text-left">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Find a pet</h1>
-        <p className="text-stone-600 text-sm mt-1">Browse listings across Nairobi. Filters work on slow networks too.</p>
+        <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-200">Find a pet</h1>
+        <p className="text-stone-600 dark:text-stone-100 text-sm mt-1">Browse listings across Nairobi. Filters work on slow networks too.</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <label className="block text-sm font-medium text-stone-700">
+        <label className="block text-sm font-medium text-stone-700 dark:text-stone-200">
           Species
           <select
             value={species}
             onChange={(e) => setSpecies(e.target.value)}
-            className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-3 text-base bg-white"
+            className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-3 text-base dark:text-gray-800 bg-white"
           >
             <option value="">Any species</option>
             {SPECIES.map((s) => (
@@ -45,12 +45,12 @@ export default function Feed() {
             ))}
           </select>
         </label>
-        <label className="block text-sm font-medium text-stone-700">
+        <label className="block text-sm font-medium text-stone-700 dark:text-stone-200">
           Status
           <select
             value={adoption_status}
             onChange={(e) => setAdoptionStatus(e.target.value)}
-            className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-3 text-base bg-white"
+            className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-3 text-base dark:text-gray-800 bg-white"
           >
             {STATUSES.map((o) => (
               <option key={o.value || 'any'} value={o.value}>
@@ -59,12 +59,12 @@ export default function Feed() {
             ))}
           </select>
         </label>
-        <label className="block text-sm font-medium text-stone-700">
+        <label className="block text-sm font-medium text-stone-700 dark:text-stone-200">
           Area
           <select
             value={nairobi_area}
             onChange={(e) => setNairobiArea(e.target.value)}
-            className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-3 text-base bg-white"
+            className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-3 text-base dark:text-gray-800 bg-white"
           >
             <option value="">Any area</option>
             {NAIROBI_AREAS.map((a) => (
@@ -85,12 +85,12 @@ export default function Feed() {
       {loading ? (
         <FeedSkeletonGrid />
       ) : pets.length === 0 ? (
-        <div className="text-center py-16 px-4 border border-dashed border-stone-200 rounded-2xl bg-stone-50">
+        <div className="text-center py-16 px-4 border border-dashed border-stone-200 rounded-2xl bg-stone-50 dark:bg-gray-900">
           <p className="text-4xl mb-2" aria-hidden>
             🐾
           </p>
-          <p className="font-medium text-stone-800">No pets match these filters</p>
-          <p className="text-sm text-stone-600 mt-1">Try clearing a filter or check back soon.</p>
+          <p className="font-medium text-stone-800 dark:text-gray-200">No pets match these filters</p>
+          <p className="text-sm text-stone-600 dark:text-stone-100 mt-1">Try clearing a filter or check back soon.</p>
         </div>
       ) : (
         <>

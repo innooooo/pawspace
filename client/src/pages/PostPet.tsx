@@ -83,13 +83,13 @@ export default function PostPet() {
   return (
     <div className="max-w-lg mx-auto text-left space-y-6 pb-8">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">List a pet</h1>
-        <p className="text-stone-600 text-sm mt-1">Add details and up to 5 photos. Large tap targets, works on mobile data.</p>
+        <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-200">List a pet</h1>
+        <p className="text-stone-600 dark:text-stone-100 text-sm mt-1">Add details and up to 5 photos. Large tap targets, works on mobile data.</p>
       </div>
 
       <form onSubmit={submit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1" htmlFor="p-name">
+          <label className="block text-sm font-medium text-stone-700 dark:text-stone-200 mb-1" htmlFor="p-name">
             Name
           </label>
           <input
@@ -97,17 +97,17 @@ export default function PostPet() {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base"
+            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base dark:text-gray-800"
           />
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <label className="block text-sm font-medium text-stone-700">
+          <label className="block text-sm font-medium text-stone-700 dark:text-stone-200">
             Species
             <select
               value={species}
               onChange={(e) => setSpecies(e.target.value)}
-              className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-3 bg-white text-base"
+              className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-3 bg-white text-base dark:text-gray-800"
             >
               {SPECIES.map((s) => (
                 <option key={s} value={s}>
@@ -116,19 +116,19 @@ export default function PostPet() {
               ))}
             </select>
           </label>
-          <label className="block text-sm font-medium text-stone-700" htmlFor="p-breed">
+          <label className="block text-sm font-medium text-stone-700 dark:text-stone-200" htmlFor="p-breed">
             Breed (optional)
             <input
               id="p-breed"
               value={breed}
               onChange={(e) => setBreed(e.target.value)}
-              className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base"
+              className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base dark:text-gray-800"
             />
           </label>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <label className="block text-sm font-medium text-stone-700" htmlFor="p-y">
+          <label className="block text-sm font-medium text-stone-700 dark:text-stone-200" htmlFor="p-y">
             Age (years)
             <input
               id="p-y"
@@ -137,10 +137,10 @@ export default function PostPet() {
               max={40}
               value={age_years}
               onChange={(e) => setAgeYears(e.target.value)}
-              className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base"
+              className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base dark:text-gray-800"
             />
           </label>
-          <label className="block text-sm font-medium text-stone-700" htmlFor="p-m">
+          <label className="block text-sm font-medium text-stone-700 dark:text-stone-200" htmlFor="p-m">
             Age (months)
             <input
               id="p-m"
@@ -149,18 +149,18 @@ export default function PostPet() {
               max={11}
               value={age_months}
               onChange={(e) => setAgeMonths(e.target.value)}
-              className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base"
+              className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base dark:text-gray-800"
             />
           </label>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <label className="block text-sm font-medium text-stone-700">
+          <label className="block text-sm font-medium text-stone-700 dark:text-stone-200">
             Sex
             <select
               value={sex}
               onChange={(e) => setSex(e.target.value)}
-              className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-3 bg-white text-base"
+              className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-3 bg-white text-base dark:text-gray-800"
             >
               {SEX.map((s) => (
                 <option key={s} value={s}>
@@ -169,12 +169,12 @@ export default function PostPet() {
               ))}
             </select>
           </label>
-          <label className="block text-sm font-medium text-stone-700">
+          <label className="block text-sm font-medium text-stone-700 dark:text-stone-200">
             Size
             <select
               value={size}
               onChange={(e) => setSize(e.target.value)}
-              className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-3 bg-white text-base"
+              className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-3 bg-white text-base dark:text-gray-800"
             >
               {SIZE.map((s) => (
                 <option key={s} value={s}>
@@ -185,7 +185,7 @@ export default function PostPet() {
           </label>
         </div>
 
-        <label className="block text-sm font-medium text-stone-700" htmlFor="p-desc">
+        <label className="block text-sm font-medium text-stone-700 dark:text-stone-200" htmlFor="p-desc">
           Description
           <textarea
             id="p-desc"
@@ -193,16 +193,16 @@ export default function PostPet() {
             rows={5}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-stone-300 px-4 py-3 text-base"
+            className="mt-1 w-full rounded-xl border border-stone-300 px-4 py-3 text-base dark:text-gray-800"
           />
         </label>
 
-        <label className="block text-sm font-medium text-stone-700">
+        <label className="block text-sm font-medium text-stone-700 dark:text-stone-200">
           Nairobi area
           <select
             value={nairobi_area}
             onChange={(e) => setNairobiArea(e.target.value)}
-            className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-3 bg-white text-base"
+            className="mt-1 w-full min-h-[48px] rounded-xl border border-stone-300 px-3 bg-white text-base dark:text-gray-800"
           >
             {NAIROBI_AREAS.map((a) => (
               <option key={a} value={a}>
@@ -220,7 +220,7 @@ export default function PostPet() {
               onChange={(e) => setVaccinated(e.target.checked)}
               className="w-6 h-6 rounded border-stone-300"
             />
-            <span className="text-stone-800">Vaccinated</span>
+            <span className="text-stone-800 dark:text-gray-200">Vaccinated</span>
           </label>
           <label className="flex items-center gap-3 min-h-[48px] cursor-pointer">
             <input
@@ -229,12 +229,12 @@ export default function PostPet() {
               onChange={(e) => setNeutered(e.target.checked)}
               className="w-6 h-6 rounded border-stone-300"
             />
-            <span className="text-stone-800">Neutered / spayed</span>
+            <span className="text-stone-800 dark:text-gray-200">Neutered / spayed</span>
           </label>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-2" htmlFor="p-photos">
+          <label className="block text-sm font-medium text-stone-700 dark:text-stone-200 mb-2" htmlFor="p-photos">
             Photos (up to 5)
           </label>
           <input

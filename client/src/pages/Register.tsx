@@ -39,25 +39,25 @@ export default function Register() {
   return (
     <div className="max-w-md mx-auto text-left space-y-6 pt-4">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Create an account</h1>
-        <p className="text-stone-600 text-sm mt-1">Join PawSpace to list or adopt pets in Nairobi.</p>
+        <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-200">Create an account</h1>
+        <p className="text-stone-600 dark:text-stone-100 text-sm mt-1">Join PawSpace to list or adopt pets in Nairobi.</p>
       </div>
 
       <form onSubmit={submit} className="space-y-4">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="name" className="block text-sm font-medium text-stone-700 dark:text-stone-200 mb-1">
             Name
           </label>
           <input
             id="name"
             required
             value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base"
+            onChange={(e) => setName(e.target.value)}            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base dark:text-gray-800"
+
           />
         </div>
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="email" className="block text-sm font-medium text-stone-700 dark:text-stone-200 mb-1">
             Email
           </label>
           <input
@@ -67,11 +67,11 @@ export default function Register() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base"
+            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base dark:text-gray-800"
           />
         </div>
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="password" className="block text-sm font-medium text-stone-700 dark:text-stone-200 mb-1">
             Password (min 8 characters)
           </label>
           <input
@@ -82,11 +82,11 @@ export default function Register() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base"
+            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base dark:text-gray-800"
           />
         </div>
         <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="phone" className="block text-sm font-medium text-stone-700 dark:text-stone-200 mb-1">
             Phone (optional)
           </label>
           <input
@@ -95,12 +95,12 @@ export default function Register() {
             inputMode="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base"
+            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base dark:text-gray-800"
             placeholder="+254…"
           />
         </div>
         <div>
-          <label htmlFor="area" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="area" className="block text-sm font-medium text-stone-700 dark:text-stone-200 mb-1">
             Nairobi area
           </label>
           <select
@@ -108,7 +108,7 @@ export default function Register() {
             required
             value={nairobi_area}
             onChange={(e) => setNairobiArea(e.target.value)}
-            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base bg-white"
+            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base dark:text-gray-800 bg-white"
           >
             {NAIROBI_AREAS.map((a) => (
               <option key={a} value={a}>
@@ -133,7 +133,7 @@ export default function Register() {
         </button>
       </form>
 
-      <p className="text-sm text-stone-600 text-center">
+      <p className="text-sm text-stone-600 dark:text-stone-100 text-center">
         Already have an account?{' '}
         <Link to="/login" className="font-semibold text-amber-800 underline">
           Log in

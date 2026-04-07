@@ -39,7 +39,7 @@ export function InterestButton({ petId, onSuccess }: Props) {
 
   return (
     <div className="space-y-3">
-      <label className="block text-sm font-medium text-stone-700" htmlFor="interest-msg">
+      <label className="block text-sm font-medium text-stone-700 dark:text-stone-200" htmlFor="interest-msg">
         Message (optional)
       </label>
       <textarea
@@ -47,7 +47,7 @@ export function InterestButton({ petId, onSuccess }: Props) {
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         rows={3}
-        className="w-full rounded-xl border border-stone-300 px-4 py-3 text-base min-h-[48px]"
+        className="w-full rounded-xl border border-stone-300 px-4 py-3 text-base dark:text-gray-800 min-h-[48px]"
         placeholder="Introduce yourself and how you can care for this pet…"
       />
       {err && (

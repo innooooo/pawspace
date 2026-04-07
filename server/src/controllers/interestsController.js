@@ -129,9 +129,11 @@ async function patchInterest(req, res) {
     return fail(res, 400, 'status must be accepted or rejected.');
   }
 
+  const client = await pool.connect();
   try {
-    const { rows } = await pool.query(
-      `SELECT ai.id, ai.pet_id, p.owner_id
+    // Fetch interest + pet ownership in one go
+    const { rows } = await client.query(
+      `SELECT ai.id, ai.pet_id, p.owner_id, p.adoption_status
        FROM adoption_interests ai
        JOIN pets p ON p.id = ai.pet_id
        WHERE ai.id = $1`,
@@ -140,18 +142,41 @@ async function patchInterest(req, res) {
     if (!rows.length) {
       return fail(res, 404, 'Interest request not found.');
     }
-    if (rows[0].owner_id !== req.user.id) {
+    const interest = rows[0];
+    if (interest.owner_id !== req.user.id) {
       return fail(res, 403, 'Only the pet owner can update this interest request.');
     }
 
-    const { rows: updated } = await pool.query(
-      `UPDATE adoption_interests SET status = $1 WHERE id = $2 RETURNING *`,
+    await client.query('BEGIN');
+
+    // Update the interest status
+    const { rows: updated } = await client.query(
+      `UPDATE adoption_interests SET status = $1, updated_at = NOW()
+       WHERE id = $2 RETURNING *`,
       [nextStatus, interestId]
     );
-    return ok(res, { interest: updated[0] });
+
+    // If accepted, move pet to pending (only if currently available)
+    if (nextStatus === 'accepted' && interest.adoption_status === 'available') {
+      await client.query(
+        `UPDATE pets SET adoption_status = 'pending', updated_at = NOW()
+         WHERE id = $1`,
+        [interest.pet_id]
+      );
+    }
+
+    await client.query('COMMIT');
+
+    return ok(res, {
+      interest: updated[0],
+      pet_status_updated: nextStatus === 'accepted' && interest.adoption_status === 'available',
+    });
   } catch (err) {
+    await client.query('ROLLBACK');
     const { status, message } = mapPgError(err);
     return fail(res, status, message);
+  } finally {
+    client.release();
   }
 }
 

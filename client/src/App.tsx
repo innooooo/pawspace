@@ -10,7 +10,7 @@ import Register from './pages/Register'
 
 function Layout() {
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-stone-50">
+    <div className="min-h-[100dvh] flex flex-col bg-stone-50 dark:bg-gray-900">
       <Navbar />
       <div className="flex-1 w-full max-w-lg mx-auto px-4 pb-8">
         <Outlet />

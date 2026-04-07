@@ -86,12 +86,12 @@ export default function PetProfile() {
 
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">{pet.name}</h1>
-          <p className="text-stone-600 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-200">{pet.name}</h1>
+          <p className="text-stone-600 dark:text-stone-100 text-sm mt-1">
             {pet.breed || pet.species}
             {ageParts.length ? ` · ${ageParts.join(', ')}` : ''} · {pet.sex} · {pet.size}
           </p>
-          <p className="text-stone-600 text-sm">{pet.nairobi_area}</p>
+          <p className="text-stone-600 dark:text-stone-100 text-sm">{pet.nairobi_area}</p>
         </div>
         <StatusBadge status={pet.adoption_status} />
       </div>
@@ -100,7 +100,7 @@ export default function PetProfile() {
         <button
           type="button"
           onClick={toggleLike}
-          className="min-h-[48px] min-w-[48px] px-4 rounded-xl border border-stone-300 bg-white font-semibold text-stone-800 flex items-center gap-2 active:bg-stone-50"
+          className="min-h-[48px] min-w-[48px] px-4 rounded-xl border border-stone-300 bg-white font-semibold text-stone-800 dark:text-gray-200 flex items-center gap-2 active:bg-stone-50 dark:bg-gray-900"
           aria-pressed={likedByMe}
         >
           <span className="text-xl" aria-hidden>
@@ -109,7 +109,7 @@ export default function PetProfile() {
           <span>{likeCount}</span>
         </button>
         {!token && (
-          <p className="text-sm text-stone-600">
+          <p className="text-sm text-stone-600 dark:text-stone-100">
             <Link to="/login" state={{ from: `/pet/${id}` }} className="font-semibold text-amber-800 underline">
               Log in
             </Link>{' '}
@@ -123,7 +123,7 @@ export default function PetProfile() {
         )}
       </div>
 
-      <section className="border border-stone-200 rounded-2xl p-4 bg-stone-50">
+      <section className="border border-stone-200 rounded-2xl p-4 bg-stone-50 dark:bg-gray-900">
         <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-2">Owner</h2>
         <div className="flex items-center gap-3">
           {owner.avatar_url ? (
@@ -139,16 +139,16 @@ export default function PetProfile() {
             </div>
           )}
           <div>
-            <p className="font-semibold text-stone-900">{owner.name}</p>
-            <p className="text-sm text-stone-600">{owner.nairobi_area}</p>
+            <p className="font-semibold text-stone-900 dark:text-stone-200">{owner.name}</p>
+            <p className="text-sm text-stone-600 dark:text-stone-100">{owner.nairobi_area}</p>
           </div>
         </div>
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold text-stone-900 mb-2">About</h2>
-        <p className="text-stone-700 whitespace-pre-wrap leading-relaxed">{pet.description}</p>
-        <ul className="mt-3 text-sm text-stone-600 space-y-1">
+        <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-200 mb-2">About</h2>
+        <p className="text-stone-700 dark:text-stone-200 whitespace-pre-wrap leading-relaxed">{pet.description}</p>
+        <ul className="mt-3 text-sm text-stone-600 dark:text-stone-100 space-y-1">
           <li>Vaccinated: {pet.is_vaccinated ? 'Yes' : 'No'}</li>
           <li>Neutered/spayed: {pet.is_neutered ? 'Yes' : 'No'}</li>
         </ul>
@@ -156,7 +156,7 @@ export default function PetProfile() {
 
       {!isOwner && token && (
         <section className="border-t border-stone-200 pt-6">
-          <h2 className="text-lg font-semibold text-stone-900 mb-3">Interested in adopting?</h2>
+          <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-200 mb-3">Interested in adopting?</h2>
           <InterestButton petId={pet.id} />
         </section>
       )}

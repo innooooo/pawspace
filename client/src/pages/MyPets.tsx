@@ -13,8 +13,8 @@ export default function MyPets() {
   return (
     <div className="space-y-6 text-left">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">My pets</h1>
-        <p className="text-stone-600 text-sm mt-1">Listings you’ve posted on PawSpace.</p>
+        <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-200">My pets</h1>
+        <p className="text-stone-600 dark:text-stone-100 text-sm mt-1">Listings you’ve posted on PawSpace.</p>
       </div>
 
       {error && (
@@ -26,12 +26,12 @@ export default function MyPets() {
       {loading ? (
         <FeedSkeletonGrid />
       ) : pets.length === 0 ? (
-        <div className="text-center py-16 px-4 border border-dashed border-stone-200 rounded-2xl bg-stone-50">
+        <div className="text-center py-16 px-4 border border-dashed border-stone-200 rounded-2xl bg-stone-50 dark:bg-gray-900">
           <p className="text-4xl mb-2" aria-hidden>
             📋
           </p>
-          <p className="font-medium text-stone-800">You haven’t posted a pet yet</p>
-          <p className="text-sm text-stone-600 mt-1">Use “+ Post” to create your first listing.</p>
+          <p className="font-medium text-stone-800 dark:text-gray-200">You haven’t posted a pet yet</p>
+          <p className="text-sm text-stone-600 dark:text-stone-100 mt-1">Use “+ Post” to create your first listing.</p>
         </div>
       ) : (
         <>

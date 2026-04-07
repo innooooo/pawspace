@@ -31,13 +31,13 @@ export default function Login() {
   return (
     <div className="max-w-md mx-auto text-left space-y-6 pt-4">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Welcome back</h1>
-        <p className="text-stone-600 text-sm mt-1">Sign in to post pets and show interest.</p>
+        <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-200">Welcome back</h1>
+        <p className="text-stone-600 dark:text-stone-100 text-sm mt-1">Sign in to post pets and show interest.</p>
       </div>
 
       <form onSubmit={submit} className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="email" className="block text-sm font-medium text-stone-700 dark:text-stone-200 mb-1">
             Email
           </label>
           <input
@@ -47,11 +47,11 @@ export default function Login() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base"
+            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base dark:text-gray-800"
           />
         </div>
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="password" className="block text-sm font-medium text-stone-700 dark:text-stone-200 mb-1">
             Password
           </label>
           <input
@@ -61,7 +61,7 @@ export default function Login() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base"
+            className="w-full min-h-[48px] rounded-xl border border-stone-300 px-4 text-base dark:text-gray-800"
           />
         </div>
 
@@ -80,7 +80,7 @@ export default function Login() {
         </button>
       </form>
 
-      <p className="text-sm text-stone-600 text-center">
+      <p className="text-sm text-stone-600 dark:text-stone-100 text-center">
         No account?{' '}
         <Link to="/register" className="font-semibold text-amber-800 underline">
           Register

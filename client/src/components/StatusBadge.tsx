@@ -5,7 +5,7 @@ const styles: Record<string, string> = {
 }
 
 export function StatusBadge({ status }: { status: string }) {
-  const cls = styles[status] ?? 'bg-stone-100 text-stone-700 border-stone-200'
+  const cls = styles[status] ?? 'bg-stone-100 text-stone-700 dark:text-stone-200 border-stone-200'
   const label =
     status === 'available'
       ? 'Available'
