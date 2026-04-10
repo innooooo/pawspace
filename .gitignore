@@ -5,3 +5,5 @@ server/uploads/*
 dist/
 .DS_Store
 *.log
+.cursor/
+*.mdc
