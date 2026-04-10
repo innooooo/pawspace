@@ -2,6 +2,8 @@ const { pool } = require('../config/db');
 const { ok, fail } = require('../utils/response');
 const { mapPgError } = require('../utils/dbErrors');
 const { INTEREST_STATUS } = require('../utils/constants');
+const { notifyAdopterAccepted, notifyAdopterRejected } = require('../utils/email');
+const { notifyOwnerOfInterest } = require('../utils/email');
 
 async function expressInterest(req, res) {
   const petId = req.params.id;
@@ -31,6 +33,22 @@ async function expressInterest(req, res) {
        RETURNING *`,
       [petId, req.user.id, message != null && message !== '' ? String(message).trim() : null]
     );
+    
+    // Notify owner — fetch their info
+    const ownerData = await pool.query(
+      `SELECT u.email, u.name FROM users u JOIN pets p ON p.owner_id = u.id WHERE p.id = $1`,
+      [petId]
+    );
+    if (ownerData.rows[0]) {
+      notifyOwnerOfInterest({
+        ownerEmail: ownerData.rows[0].email,
+        ownerName: ownerData.rows[0].name,
+        adopterName: req.user.name,
+        petName: petResult.rows[0].name,
+        petId,
+        message,
+      });
+    }
     return ok(res, { interest: rows[0] }, null, 201);
   } catch (err) {
     const { status, message } = mapPgError(err);
@@ -166,6 +184,43 @@ async function patchInterest(req, res) {
     }
 
     await client.query('COMMIT');
+    // Fire emails after commit — non-blocking
+    if (nextStatus === 'accepted' || nextStatus === 'rejected') {
+      // Fetch adopter + owner + pet info for email
+      const emailData = await pool.query(
+        `SELECT
+           adopter.email AS adopter_email, adopter.name AS adopter_name,
+           owner.name AS owner_name, owner.email AS owner_email, owner.phone AS owner_phone,
+           p.name AS pet_name, p.id AS pet_id
+         FROM adoption_interests ai
+         JOIN users adopter ON adopter.id = ai.adopter_id
+         JOIN pets p ON p.id = ai.pet_id
+         JOIN users owner ON owner.id = p.owner_id
+         WHERE ai.id = $1`,
+        [interestId]
+      );
+      const d = emailData.rows[0];
+      if (d) {
+        if (nextStatus === 'accepted') {
+          notifyAdopterAccepted({
+            adopterEmail: d.adopter_email,
+            adopterName: d.adopter_name,
+            ownerName: d.owner_name,
+            ownerEmail: d.owner_email,
+            ownerPhone: d.owner_phone,
+            petName: d.pet_name,
+            petId: d.pet_id,
+          });
+        } else {
+          notifyAdopterRejected({
+            adopterEmail: d.adopter_email,
+            adopterName: d.adopter_name,
+            petName: d.pet_name,
+            petId: d.pet_id,
+          });
+        }
+      }
+    }
 
     return ok(res, {
       interest: updated[0],

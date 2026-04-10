@@ -5,6 +5,7 @@ import { InterestButton } from '../components/InterestButton'
 import { InterestManager } from '../components/InterestManager'
 import { PhotoGallery } from '../components/PhotoGallery'
 import { StatusBadge } from '../components/StatusBadge'
+import { CommentsSection } from '../components/CommentsSection'
 import { useAuth } from '../hooks/useAuth'
 import { usePet } from '../hooks/usePet'
 
@@ -166,6 +167,9 @@ export default function PetProfile() {
           <InterestManager petId={pet.id} />
         </section>
       )}
+
+      <CommentsSection petId={pet.id}/>
+      
     </article>
   )
 }

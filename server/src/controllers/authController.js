@@ -4,6 +4,7 @@ const { pool } = require('../config/db');
 const { ok, fail } = require('../utils/response');
 const { mapPgError } = require('../utils/dbErrors');
 const { NAIROBI_AREAS } = require('../utils/constants');
+const { notifyWelcome } = require('../utils/email');
 
 function publicUser(row) {
   if (!row) return null;
@@ -39,6 +40,9 @@ async function register(req, res) {
     );
     const user = rows[0];
     const token = signToken(user.id);
+
+    // Non-blocking welcome email
+    notifyWelcome({ email: user.email, name: user.name });
     return ok(res, { user, token }, null, 201);
   } catch (err) {
     const { status, message } = mapPgError(err);
