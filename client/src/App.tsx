@@ -1,4 +1,5 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
+import { Footer } from './components/Footer'
 import { Navbar } from './components/Navbar'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import Feed from './pages/Feed'
@@ -15,6 +16,7 @@ function Layout() {
       <div className="flex-1 w-full">
         <Outlet />
       </div>
+      <Footer />
     </div>
   )
 }
