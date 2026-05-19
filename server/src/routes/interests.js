@@ -11,4 +11,3 @@ interestPatch.use(requireAuth);
 interestPatch.patch('/:id', ctrl.patchInterest);
 
 module.exports = { petInterests, interestPatch };
-console.log(ctrl);

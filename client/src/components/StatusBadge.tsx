@@ -1,23 +1,23 @@
 const styles: Record<string, string> = {
-  available: 'bg-emerald-100 text-emerald-900 border-emerald-200',
-  pending: 'bg-amber-100 text-amber-900 border-amber-200',
-  adopted: 'bg-stone-200 text-stone-700 border-stone-300',
+  available: 'border-emerald-300/30 bg-emerald-300/15 text-emerald-100 shadow-emerald-400/10',
+  pending: 'border-amber-300/35 bg-amber-300/18 text-amber-100 shadow-amber-400/10',
+  adopted: 'border-violet-300/30 bg-violet-300/15 text-violet-100 shadow-violet-400/10',
 }
 
 export function StatusBadge({ status }: { status: string }) {
-  const cls = styles[status] ?? 'bg-stone-100 text-stone-700 dark:text-stone-200 border-stone-200'
+  const cls = styles[status] ?? 'border-white/15 bg-white/10 text-white/80'
   const label =
     status === 'available'
-      ? 'Available'
+      ? 'Available now'
       : status === 'pending'
-        ? 'Pending'
+        ? 'Meeting pending'
         : status === 'adopted'
-          ? 'Adopted'
+          ? 'Recently adopted'
           : status
 
   return (
     <span
-      className={`inline-flex items-center min-h-[28px] px-2.5 py-1 rounded-full text-xs font-semibold border ${cls}`}
+      className={`inline-flex min-h-[30px] items-center rounded-full border px-3 py-1 text-xs font-black uppercase tracking-[0.16em] shadow-lg backdrop-blur-xl ${cls}`}
     >
       {label}
     </span>
