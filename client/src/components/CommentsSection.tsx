@@ -182,7 +182,7 @@ export function CommentsSection({ petId }: { petId: string }) {
     try {
       const res = await api.get(`/api/pets/${petId}/comments`)
       setComments(res.data.data.comments)
-    } catch {
+    } catch (e) {
       // non-fatal
     } finally {
       setLoading(false)

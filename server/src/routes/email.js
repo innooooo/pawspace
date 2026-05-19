@@ -1,5 +1,6 @@
 const { Resend } = require('resend');
 
+const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.EMAIL_FROM || 'PawSpace <notifications@pawspace.co.ke>';
 
 /**
@@ -11,7 +12,6 @@ async function sendEmail({ to, subject, html }) {
     return;
   }
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({ from: FROM, to, subject, html });
     console.log(`[email] Sent "${subject}" to ${to}`);
   } catch (err) {

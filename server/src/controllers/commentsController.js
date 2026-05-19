@@ -89,7 +89,7 @@ async function addComment(req, res) {
 
 // DELETE /api/comments/:id
 async function deleteComment(req, res) {
-  const commentId = req.params.commentId || req.params.id;
+  const commentId = req.params.id;
   try {
     const { rows } = await pool.query(
       `SELECT id, user_id FROM pet_comments WHERE id = $1`,
@@ -109,7 +109,7 @@ async function deleteComment(req, res) {
 
 // PATCH /api/comments/:id
 async function editComment(req, res) {
-  const commentId = req.params.commentId || req.params.id;
+  const commentId = req.params.id;
   const { body } = req.body;
 
   if (!body || !String(body).trim()) return fail(res, 400, 'Body is required.');
