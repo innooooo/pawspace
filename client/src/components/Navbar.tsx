@@ -1,4 +1,3 @@
-import { Heart, LogOut, Menu, Moon, PawPrint, Plus, Search, Sparkles, Sun } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useTheme } from '../hooks/useTheme'
@@ -18,98 +17,86 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 px-3 py-3">
-      <nav className="glass-panel mx-auto flex min-h-[64px] w-full max-w-7xl items-center justify-between gap-3 rounded-[28px] px-3 text-white sm:px-5">
+    <header className="sticky top-0 z-40 border-b border-stone-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:bg-gray-900/95 dark:border-gray-700">
+      <div className="max-w-lg mx-auto px-4 flex items-center justify-between gap-2 min-h-[56px]">
+        {/* Logo */}
         <Link
           to="/feed"
-          className="group flex min-h-[48px] items-center gap-3 rounded-2xl pr-2"
-          aria-label="PawSpace home"
+          className="text-lg font-bold text-amber-800 dark:text-amber-400 tracking-tight min-h-[48px] flex items-center shrink-0"
         >
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-400 text-[#060b1f] shadow-lg shadow-amber-500/30 transition-transform group-hover:scale-105">
-            <PawPrint size={22} strokeWidth={2.5} />
-          </span>
-          <span className="hidden text-lg font-black tracking-tight sm:inline">PawSpace</span>
+          🐾 PawSpace
         </Link>
 
-        <div className="hidden items-center gap-1 rounded-2xl bg-white/[0.06] p-1 text-sm text-white/72 lg:flex">
-          <Link to="/feed" className="flex min-h-[42px] items-center gap-2 rounded-xl px-4 font-semibold hover:bg-white/10 hover:text-white">
-            <Search size={16} />
-            Explore Pets
-          </Link>
-          <button type="button" onClick={goPost} className="flex min-h-[42px] items-center gap-2 rounded-xl px-4 font-semibold hover:bg-white/10 hover:text-white">
-            <Plus size={16} />
-            Post a Pet
-          </button>
-          <Link to="/feed" className="flex min-h-[42px] items-center gap-2 rounded-xl px-4 font-semibold hover:bg-white/10 hover:text-white">
-            <Heart size={16} />
-            Favorites
-          </Link>
-        </div>
-
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center gap-1 justify-end">
+          {/* Dark mode toggle */}
           <button
             type="button"
             onClick={toggle}
-            aria-label="Toggle color mode"
-            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-white/80 hover:bg-white/12 hover:text-white"
+            aria-label="Toggle dark mode"
+            className="min-h-[48px] min-w-[48px] flex items-center justify-center rounded-xl text-lg hover:bg-stone-100 dark:hover:bg-gray-800 transition-colors"
           >
-            {dark ? <Sun size={18} /> : <Moon size={18} />}
+            {dark ? '☀️' : '🌙'}
+          </button>
+
+          {/* Post button */}
+          <button
+            type="button"
+            onClick={goPost}
+            className="min-h-[48px] min-w-[48px] px-3 rounded-xl bg-amber-500 text-white font-semibold text-sm active:bg-amber-600 dark:bg-amber-600 dark:active:bg-amber-700 shrink-0"
+          >
+            + Post
           </button>
 
           {token && user ? (
             <>
-              <Link
-                to="/my-pets"
-                className="hidden min-h-[44px] items-center gap-2 rounded-2xl border border-white/10 px-4 text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white sm:flex"
-              >
-                <Sparkles size={16} />
-                My Pets
-              </Link>
+              {/* Avatar + name — clicking goes to profile */}
               <Link
                 to="/profile"
-                className="hidden items-center gap-2 rounded-2xl bg-white/[0.06] p-1.5 pr-3 text-sm font-semibold text-white/80 hover:bg-white/10 md:flex"
+                className="hidden sm:flex items-center gap-2 min-h-[48px] px-2 rounded-xl hover:bg-stone-100 dark:hover:bg-gray-800 transition-colors"
+                title={user.name}
               >
-                <Avatar name={user.name} avatarUrl={user.avatar_url} size={32} />
-                <span className="max-w-[120px] truncate">{user.name}</span>
+                <Avatar name={user.name} avatarUrl={user.avatar_url} size={28} />
+                <span className="text-sm text-stone-600 dark:text-gray-100 max-w-[120px] truncate">
+                  {user.name}
+                </span>
               </Link>
+
+              <Link
+                to="/my-pets"
+                className="min-h-[48px] px-3 flex items-center text-sm font-medium text-stone-600 dark:text-gray-100 rounded-xl hover:bg-stone-100 dark:hover:bg-gray-800"
+              >
+                My pets
+              </Link>
+
               <button
                 type="button"
                 onClick={() => {
                   logout()
                   navigate('/feed')
                 }}
-                aria-label="Log out"
-                className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-white/80 hover:bg-white/12 hover:text-white"
+                className="min-h-[48px] px-3 text-sm font-medium text-stone-600 dark:text-stone-100 rounded-xl hover:bg-stone-100 dark:hover:bg-gray-800"
               >
-                <LogOut size={18} />
+                Log out
               </button>
             </>
           ) : (
             <>
               <Link
                 to="/login"
-                className="hidden min-h-[44px] items-center rounded-2xl px-4 text-sm font-semibold text-white/78 hover:bg-white/10 hover:text-white sm:flex"
+                className="min-h-[48px] px-3 flex items-center text-sm font-medium text-stone-800 dark:text-gray-200 rounded-xl hover:bg-stone-100 dark:hover:bg-gray-800"
               >
-                Login
+                Log in
               </Link>
               <Link
                 to="/register"
-                className="soft-glow flex min-h-[44px] items-center rounded-2xl bg-amber-400 px-4 text-sm font-black text-[#060b1f] hover:bg-amber-300"
+                className="min-h-[48px] px-3 flex items-center text-sm font-semibold text-amber-800 dark:text-amber-400 rounded-xl hover:bg-amber-50 dark:hover:bg-gray-800"
               >
                 Register
               </Link>
             </>
           )}
-
-          <button
-            type="button"
-            aria-label="Open navigation"
-            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-white/80 hover:bg-white/12 lg:hidden"
-          >
-            <Menu size={18} />
-          </button>
         </div>
-      </nav>
+      </div>
     </header>
   )
 }

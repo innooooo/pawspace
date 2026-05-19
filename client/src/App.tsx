@@ -1,5 +1,4 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
-import { Footer } from './components/Footer'
 import { Navbar } from './components/Navbar'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import Feed from './pages/Feed'
@@ -11,12 +10,11 @@ import Register from './pages/Register'
 
 function Layout() {
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-[#060b1f] text-white">
+    <div className="min-h-[100dvh] flex flex-col bg-stone-50 dark:bg-gray-900">
       <Navbar />
-      <div className="flex-1 w-full">
+      <div className="flex-1 w-full max-w-lg mx-auto px-4 pb-8">
         <Outlet />
       </div>
-      <Footer />
     </div>
   )
 }
