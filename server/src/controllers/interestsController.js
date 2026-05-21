@@ -2,7 +2,7 @@ const { pool } = require('../config/db');
 const { ok, fail } = require('../utils/response');
 const { mapPgError } = require('../utils/dbErrors');
 const { INTEREST_STATUS } = require('../utils/constants');
-const { notifyAdopterAccepted, notifyAdopterRejected } = require('../utils/email');
+const { notifyAdopterAccepted, notifyAdopterRejected } = require('../routes/email');
 const { notifyOwnerOfInterest } = require('../routes/email');
 
 async function expressInterest(req, res) {
