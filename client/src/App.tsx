@@ -1,4 +1,5 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import { Navbar } from './components/Navbar'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import Feed from './pages/Feed'
@@ -21,31 +22,34 @@ function Layout() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route index element={<Navigate to="/feed" replace />} />
-        <Route path="feed" element={<Feed />} />
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register />} />
-        <Route path="pet/:id" element={<PetProfile />} />
-        <Route
-          path="post"
-          element={
-            <ProtectedRoute>
-              <PostPet />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="my-pets"
-          element={
-            <ProtectedRoute>
-              <MyPets />
-            </ProtectedRoute>
-          }
-        />
-      </Route>
-      <Route path="*" element={<Navigate to="/feed" replace />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<Navigate to="/feed" replace />} />
+          <Route path="feed" element={<Feed />} />
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+          <Route path="pet/:id" element={<PetProfile />} />
+          <Route
+            path="post"
+            element={
+              <ProtectedRoute>
+                <PostPet />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="my-pets"
+            element={
+              <ProtectedRoute>
+                <MyPets />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+        <Route path="*" element={<Navigate to="/feed" replace />} />
+      </Routes>
+      <Analytics />
+    </>
   )
 }
