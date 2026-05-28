@@ -2,15 +2,15 @@ const { pool } = require('../config/db');
 const { ok, fail } = require('../utils/response');
 const { mapPgError } = require('../utils/dbErrors');
 const { INTEREST_STATUS } = require('../utils/constants');
-const { notifyAdopterAccepted, notifyAdopterRejected } = require('../utils/email');
-const { notifyOwnerOfInterest } = require('../utils/email');
+const { notifyAdopterAccepted, notifyAdopterRejected } = require('../routes/email');
+const { notifyOwnerOfInterest } = require('../routes/email');
 
 async function expressInterest(req, res) {
   const petId = req.params.id;
   const { message } = req.body;
 
   try {
-    const petResult = await pool.query(`SELECT id, owner_id, name FROM pets WHERE id = $1`, [petId]);
+    const petResult = await pool.query(`SELECT id, owner_id FROM pets WHERE id = $1`, [petId]);
     if (!petResult.rows.length) {
       return fail(res, 404, 'Pet not found.');
     }

@@ -77,7 +77,7 @@ Pawspace/
 ### Prerequisites
 
 - **Node.js** 20+ (recommended)
-- **Docker** for the easiest local PostgreSQL setup, or PostgreSQL 15+ with extensions available: `citext`, `pgcrypto`
+- **PostgreSQL** 15+ with extensions available: `citext`, `pgcrypto`
 - `psql` or any Postgres client to run SQL files
 
 ### 1. Clone the repository
@@ -89,38 +89,12 @@ cd Pawspace
 
 ### 2. Database setup
 
-#### Option A: Docker local database
-
-If you already have Docker, start PostgreSQL with:
-
-```bash
-docker compose up -d postgres
-```
-
-This creates a local database with the schema, comments migration, and seed data loaded on first startup.
-
-Use this server connection string:
-
-```bash
-DATABASE_URL=postgres://pawspace:pawspace@localhost:5432/pawspace
-```
-
-To reset the local database and rerun the init SQL:
-
-```bash
-docker compose down -v
-docker compose up -d postgres
-```
-
-#### Option B: Existing PostgreSQL
-
-Create a database and apply the schema, comments migration, then optionally seed sample data:
+Create a database and apply the schema, then (optionally) seed sample data:
 
 ```bash
 createdb pawspace   # or use your host’s UI / Railway / Render Postgres
 
 psql "$DATABASE_URL" -f database/schema.sql
-psql "$DATABASE_URL" -f database/migrations/001_add_comments.sql
 psql "$DATABASE_URL" -f database/seed.sql
 ```
 
@@ -130,7 +104,7 @@ psql "$DATABASE_URL" -f database/seed.sql
 cd server
 ```
 
-Create `server/.env` with at least `DATABASE_URL` and `JWT_SECRET` (see [Environment variables](#environment-variables)). You can copy `server/.env.example` for local Docker defaults.
+Create `server/.env` with at least `DATABASE_URL` and `JWT_SECRET` (see [Environment variables](#environment-variables)).
 
 ```bash
 npm install
@@ -147,7 +121,7 @@ npm install
 npm run dev
 ```
 
-Vite runs the dev server (default **5173**). In local development, `/api` requests are proxied to `http://localhost:3000`. For deployed builds, set `VITE_API_URL` to your API origin if the client and API are on different domains.
+Vite runs the dev server (default **5173**). Point the client at your API base URL (e.g. via `VITE_API_URL` or your chosen proxy) so requests hit `http://localhost:3000` during development.
 
 ### 5. Production build (client)
 
@@ -192,10 +166,6 @@ All JSON responses use a consistent envelope:
 | `PATCH` | `/api/interests/:id` | Bearer | Update interest status (`accepted` or `rejected`; pet owner only). |
 | `POST` | `/api/pets/:id/like` | Bearer | Toggle like on a pet. |
 | `GET` | `/api/pets/:id/likes` | Optional | Like count and whether the current user liked (if `Authorization` present). |
-| `GET` | `/api/pets/:id/comments` | No | List comments for a pet. |
-| `POST` | `/api/pets/:id/comments` | Bearer | Add a top-level comment or reply (`body`, optional `parent_id`). |
-| `PATCH` | `/api/comments/:id` | Bearer | Edit your own comment. |
-| `DELETE` | `/api/comments/:id` | Bearer | Delete your own comment. |
 
 **Authentication header:** `Authorization: Bearer <jwt>`
 
@@ -212,9 +182,6 @@ All JSON responses use a consistent envelope:
 | `JWT_EXPIRES_IN` | No | JWT lifetime (default `7d`). |
 | `PORT` | No | HTTP port (default `3000`). |
 | `PUBLIC_API_URL` or `API_BASE_URL` | No | Public base URL for absolute photo URLs in API responses. If unset, derived from the incoming request. |
-| `APP_URL` | No | Frontend URL used in email links (default `http://localhost:5173`). |
-| `RESEND_API_KEY` | No | Enables transactional email. If unset, email sends are skipped. |
-| `EMAIL_FROM` | No | Sender address for transactional email. |
 
 ### Client (`client/.env` — optional)
 
