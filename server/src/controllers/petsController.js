@@ -119,6 +119,9 @@ async function createPet(req, res) {
 }
 
 async function listPets(req, res) {
+  //disabling caching
+  res.set('Cache-Control', 'no-store');
+
   const species = req.query.species;
   const adoption_status = req.query.adoption_status;
   const nairobi_area = req.query.nairobi_area;
@@ -173,6 +176,8 @@ async function listPets(req, res) {
     const { rows } = await pool.query(listSql, params);
 
     const hasMore = offset + rows.length < total;
+    
+
     return ok(res, { pets: rows }, { page, limit: PAGE_SIZE, total, hasMore });
   } catch (err) {
     const { status, message } = mapPgError(err);
