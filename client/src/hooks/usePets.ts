@@ -18,7 +18,7 @@ export function usePets(
 
   const fetchPage = useCallback(
     async (page: number, append: boolean) => {
-      const params: Record<string, string | number> = { page }
+      const params: Record<string, string | number> = { page, _t: Date.now() }
       if (species) params.species = species
       if (adoption_status) params.adoption_status = adoption_status
       if (nairobi_area) params.nairobi_area = nairobi_area
