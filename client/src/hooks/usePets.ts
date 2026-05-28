@@ -23,7 +23,7 @@ export function usePets(
       if (adoption_status) params.adoption_status = adoption_status
       if (nairobi_area) params.nairobi_area = nairobi_area
 
-      const res = await api.get(path, { params, headers:{'Cache-Control':'no-cache', 'Pragma':'no-cache'} })
+      const res = await api.get(path, { params })
       const data = unwrap(res) as { pets: Pet[] }
       const m = res.data.meta as PaginationMeta | null
       setMeta(m)
