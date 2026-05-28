@@ -119,6 +119,7 @@ async function createPet(req, res) {
 }
 
 async function listPets(req, res) {
+  console.log("🔥 HIT listPets");
   //disabling caching
   res.set('Cache-Control', 'no-store');
 
@@ -161,9 +162,11 @@ async function listPets(req, res) {
       `SELECT COUNT(*)::int AS c FROM pets p ${whereSql}`,
       params
     );
-    const total = countResult.rows[0].c;
 
-    params.push(PAGE_SIZE, offset);
+    const total = countResult.rows?.[0]?.c ?? 0;
+
+    const queryParams = [...params, PAGE_SIZE, offset];
+
     const listSql = `
       SELECT p.*, pp.url AS primary_photo_url,
         (SELECT COUNT(*)::int FROM pet_likes pl WHERE pl.pet_id = p.id) AS like_count
@@ -171,18 +174,19 @@ async function listPets(req, res) {
       LEFT JOIN pet_photos pp ON pp.pet_id = p.id AND pp.is_primary = true
       ${whereSql}
       ORDER BY p.created_at DESC
-      LIMIT $${i++} OFFSET $${i++}
+      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
     `;
-    const { rows } = await pool.query(listSql, params);
+
+    const { rows } = await pool.query(listSql, queryParams);
 
     const hasMore = offset + rows.length < total;
     
 
     return ok(res, { pets: rows }, { page, limit: PAGE_SIZE, total, hasMore });
   } catch (err) {
-    const { status, message } = mapPgError(err);
-    return fail(res, status, message);
-  }
+  console.error("🔥 FULL ERROR:", err);
+  return fail(res, 500, err.message, err.stack);
+}
 }
 
 async function listMyPets(req, res) {
@@ -225,9 +229,11 @@ async function listMyPets(req, res) {
       `SELECT COUNT(*)::int AS c FROM pets p ${whereSql}`,
       params
     );
-    const total = countResult.rows[0].c;
 
-    params.push(PAGE_SIZE, offset);
+    const total = countResult.rows?.[0]?.c ?? 0;
+
+    const queryParams = [...params, PAGE_SIZE, offset];
+
     const listSql = `
       SELECT p.*, pp.url AS primary_photo_url,
         (SELECT COUNT(*)::int FROM pet_likes pl WHERE pl.pet_id = p.id) AS like_count
@@ -235,16 +241,16 @@ async function listMyPets(req, res) {
       LEFT JOIN pet_photos pp ON pp.pet_id = p.id AND pp.is_primary = true
       ${whereSql}
       ORDER BY p.created_at DESC
-      LIMIT $${i++} OFFSET $${i++}
+      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
     `;
-    const { rows } = await pool.query(listSql, params);
 
+    const { rows } = await pool.query(listSql, queryParams);
     const hasMore = offset + rows.length < total;
     return ok(res, { pets: rows }, { page, limit: PAGE_SIZE, total, hasMore });
   } catch (err) {
-    const { status, message } = mapPgError(err);
-    return fail(res, status, message);
-  }
+  console.error("🔥 FULL ERROR:", err);
+  return fail(res, 500, err.message, err.stack);
+}
 }
 
 async function getPet(req, res) {
