@@ -68,6 +68,7 @@ app.use(express.json());
  * STATIC FILES
  * =========================
  */
+
 app.use('/uploads', express.static(uploadsDir));
 
 /**
