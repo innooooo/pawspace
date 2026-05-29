@@ -1,7 +1,6 @@
 const { Resend } = require('resend');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = process.env.EMAIL_FROM || 'PawSpace <notifications@pawspace.co.ke>';
+const FROM = process.env.EMAIL_FROM;
 
 /**
  * Send an email — fails silently so email errors never break API responses.
@@ -12,6 +11,7 @@ async function sendEmail({ to, subject, html }) {
     return;
   }
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
     await resend.emails.send({ from: FROM, to, subject, html });
     console.log(`[email] Sent "${subject}" to ${to}`);
   } catch (err) {
@@ -72,7 +72,7 @@ function baseTemplate(content) {
  * Notify pet owner that someone expressed interest in their pet.
  */
 async function notifyOwnerOfInterest({ ownerEmail, ownerName, adopterName, petName, petId, message }) {
-  const appUrl = process.env.APP_URL || 'http://localhost:5173';
+  const appUrl = process.env.FRONTEND_URL;
   const petUrl = `${appUrl}/pet/${petId}`;
 
   const content = `
@@ -106,7 +106,7 @@ async function notifyOwnerOfInterest({ ownerEmail, ownerName, adopterName, petNa
  * Notify adopter that their interest was accepted.
  */
 async function notifyAdopterAccepted({ adopterEmail, adopterName, ownerName, ownerPhone, ownerEmail: ownerEmailAddr, petName, petId }) {
-  const appUrl = process.env.APP_URL || 'http://localhost:5173';
+  const appUrl = process.env.FRONTEND_URL;
   const petUrl = `${appUrl}/pet/${petId}`;
 
   const content = `
@@ -149,7 +149,7 @@ async function notifyAdopterAccepted({ adopterEmail, adopterName, ownerName, own
  * Notify adopter that their interest was rejected.
  */
 async function notifyAdopterRejected({ adopterEmail, adopterName, petName, petId }) {
-  const appUrl = process.env.APP_URL || 'http://localhost:5173';
+  const appUrl = process.env.FRONTEND_URL;
   const feedUrl = `${appUrl}/feed`;
 
   const content = `
@@ -180,7 +180,7 @@ async function notifyAdopterRejected({ adopterEmail, adopterName, petName, petId
  * Welcome email on registration.
  */
 async function notifyWelcome({ email, name }) {
-  const appUrl = process.env.APP_URL || 'http://localhost:5173';
+  const appUrl = process.env.FRONTEND_URL;
 
   const content = `
     <h2 style="margin:0 0 8px;color:#6B3F2A;font-size:20px;font-weight:800;">

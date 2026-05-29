@@ -10,7 +10,7 @@ async function expressInterest(req, res) {
   const { message } = req.body;
 
   try {
-    const petResult = await pool.query(`SELECT id, owner_id FROM pets WHERE id = $1`, [petId]);
+    const petResult = await pool.query(`SELECT id, owner_id, name FROM pets WHERE id = $1`, [petId]);
     if (!petResult.rows.length) {
       return fail(res, 404, 'Pet not found.');
     }
