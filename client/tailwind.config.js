@@ -12,7 +12,10 @@ export default {
           green: '#4CAF82',
         }
       },
-      fontFamily: { display: ['Nunito', 'sans-serif'] }
+      fontFamily: {
+        display: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
     },
   },
   plugins: [],
