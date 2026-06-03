@@ -30,6 +30,9 @@ export type Pet = {
   updated_at: string
   primary_photo_url?: string | null
   like_count?: number
+  archived_at?: string
+  success_note?: string
+  success_photo_url?: string
 }
 
 export type PetPhoto = {
