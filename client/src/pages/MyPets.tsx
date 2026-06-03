@@ -1,14 +1,21 @@
 import { PetCard } from '../components/PetCard'
 import { FeedSkeletonGrid } from '../components/SkeletonCard'
 import { usePets } from '../hooks/usePets'
+import type { Pet } from '../types'
 
 export default function MyPets() {
-  const { pets, loading, loadingMore, error, loadMore, meta } = usePets(
+  const { pets, loading, loadingMore, error, loadMore, meta, refetch } = usePets(
     undefined,
     undefined,
     undefined,
     true
   )
+
+  //Refresh list after actions
+   const handlePetUpdate = async (_updatedPet: Pet | null) => {
+    // Refetch the list to reflect changes
+    await refetch()
+  }
 
   return (
     <div className="space-y-6 text-left">
@@ -37,7 +44,7 @@ export default function MyPets() {
         <>
           <div className="grid gap-4 sm:grid-cols-2">
             {pets.map((p) => (
-              <PetCard key={p.id} pet={p} />
+              <PetCard key={p.id} pet={p} isOwner onUpdate={handlePetUpdate}/>
             ))}
           </div>
           {meta?.hasMore && (

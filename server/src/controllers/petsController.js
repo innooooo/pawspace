@@ -119,7 +119,6 @@ async function createPet(req, res) {
 }
 
 async function listPets(req, res) {
-  console.log("🔥 HIT listPets");
   //disabling caching
   res.set('Cache-Control', 'no-store');
 
@@ -291,37 +290,93 @@ async function updatePet(req, res) {
   const errMsg = validatePetPayload(req.body, true);
   if (errMsg) return fail(res, 400, errMsg);
 
+  const action = req.body.action; // 'archive' | 'adopt' | 'delete' | undefined (normal edit)
+  const allowedEditFields = [
+    'name',
+    'species',
+    'breed',
+    'age_years',
+    'age_months',
+    'sex',
+    'size',
+    'description',
+    'adoption_status',
+    'nairobi_area',
+    'is_vaccinated',
+    'is_neutered',
+  ];
+
   try {
+    // Fetch existing pet
     const existing = await pool.query(`SELECT * FROM pets WHERE id = $1`, [id]);
     if (!existing.rows.length) {
       return fail(res, 404, 'Pet not found.');
     }
-    if (existing.rows[0].owner_id !== req.user.id) {
+    const pet = existing.rows[0];
+
+    if (pet.owner_id !== req.user.id) {
       return fail(res, 403, 'You can only update your own pet listings.');
     }
 
-    const allowed = [
-      'name',
-      'species',
-      'breed',
-      'age_years',
-      'age_months',
-      'sex',
-      'size',
-      'description',
-      'adoption_status',
-      'nairobi_area',
-      'is_vaccinated',
-      'is_neutered',
-    ];
+    // Handle delete action
+    if (action === 'delete') {
+      const confirm = req.body.confirm;
+      if (confirm !== true) {
+        return fail(res, 400, 'Confirmation required to delete a listing. Set confirm: true.');
+      }
+      await pool.query(`DELETE FROM pets WHERE id = $1`, [id]);
+      return ok(res, { message: 'Listing permanently deleted.' });
+    }
 
+    // Handle archive action
+    if (action === 'archive') {
+      await pool.query(
+        `UPDATE pets SET adoption_status = 'archived' WHERE id = $1 RETURNING *`,
+        [id]
+      );
+      const { rows } = await pool.query(`SELECT * FROM pets WHERE id = $1`, [id]);
+      return ok(res, { pet: rows[0], message: 'Listing archived.' });
+    }
+
+    // Handle adopt action
+    if (action === 'adopt') {
+      const successNote = req.body.success_note;
+      if (successNote != null) {
+        if (typeof successNote !== 'string' || successNote.length > 300) {
+          return fail(res, 400, 'success_note must be a string with max 300 characters.');
+        }
+      }
+      const successPhoto = req.body.success_photo_url; // assume URL or null
+
+      await pool.query(
+        `UPDATE pets 
+         SET adoption_status = 'adopted', 
+             success_note = $2, 
+             success_photo = $3 
+         WHERE id = $1 
+         RETURNING *`,
+        [id, successNote ?? null, successPhoto ?? null]
+      );
+      const { rows } = await pool.query(`SELECT * FROM pets WHERE id = $1`, [id]);
+      return ok(res, { pet: rows[0], message: 'Pet marked as adopted.' });
+    }
+
+    // Normal edit: only if no special action
+    if (action != null && action !== 'edit') {
+      return fail(res, 400, `Invalid action: ${action}. Use 'archive', 'adopt', 'delete', or omit for edit.`);
+    }
+
+    // Build dynamic UPDATE for allowed fields
     const sets = [];
     const values = [];
     let idx = 1;
 
-    for (const key of allowed) {
+    //SQL injection prevention
+    for (const key of allowedEditFields) {
       if (req.body[key] === undefined) continue;
       let v = req.body[key];
+      
+      //Data validation per field
       if (key === 'name' || key === 'description' || key === 'breed') {
         v = v != null ? String(v).trim() : v;
         if (key === 'breed' && v === '') v = null;
@@ -332,11 +387,16 @@ async function updatePet(req, res) {
       if (key === 'is_vaccinated' || key === 'is_neutered') {
         v = Boolean(v);
       }
+
+      // Prevent changing adoption_status via normal edit; only via actions
+      if (key === 'adoption_status') continue;
+
       sets.push(`${key} = $${idx++}`);
       values.push(v);
     }
 
-    if (!sets.length) {
+    if (!sets.length && !req.body.success_note && !req.body.success_photo) {
+      // Allow edit-only if there are real fields; otherwise no-op
       return fail(res, 400, 'No valid fields to update.');
     }
 

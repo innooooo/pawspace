@@ -1,0 +1,4 @@
+ALTER TABLE pets 
+ADD COLUMN archived_at TIMESTAMPTZ NULL,
+ADD COLUMN success_note VARCHAR(300) NULL,
+ADD COLUMN success_photo_url TEXT NULL;
