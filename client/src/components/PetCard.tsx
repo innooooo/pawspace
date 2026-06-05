@@ -36,7 +36,7 @@ export function PetCard({ pet, isOwner = false, onUpdate }: Props) {
     pet.size === 'small' ? 'Apartment ready' : pet.size === 'large' ? 'Active home' : 'Playful',
   ]
 
-  const { archivePet, adoptPet, deletePet, loadingMap, error, clearError } = usePetActions()
+  const { archivePet, adoptPet, deletePet, loadingMap } = usePetActions()
   
   const [showArchiveModal, setShowArchiveModal] = useState(false)
   const [showAdoptModal, setShowAdoptModal] = useState(false)
