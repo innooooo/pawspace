@@ -36,7 +36,7 @@ export function PetCard({ pet, isOwner = false, onUpdate }: Props) {
     pet.size === 'small' ? 'Apartment ready' : pet.size === 'large' ? 'Active home' : 'Playful',
   ]
 
-  const { archivePet, adoptPet, deletePet, loading } = usePetActions()
+  const { archivePet, adoptPet, deletePet, loadingMap, error, clearError } = usePetActions()
   
   const [showArchiveModal, setShowArchiveModal] = useState(false)
   const [showAdoptModal, setShowAdoptModal] = useState(false)
@@ -47,12 +47,12 @@ export function PetCard({ pet, isOwner = false, onUpdate }: Props) {
   const isAvailable = pet.adoption_status === 'available'
 
   const handleArchive = async () => {
-    const result = await archivePet(pet.id)
-    if (result.success && onUpdate) {
-      onUpdate(result.pet)
-    }
-    setShowArchiveModal(false)
+  const result = await archivePet(pet.id, pet.adoption_status)
+  if (result.success && onUpdate) {
+    onUpdate(result.pet)
   }
+  setShowArchiveModal(false)
+}
 
   const handleAdopt = async (payload?: { success_note?: string; success_photo_url?: string }) => {
     const result = await adoptPet(pet.id, payload)
@@ -154,7 +154,7 @@ export function PetCard({ pet, isOwner = false, onUpdate }: Props) {
                         setShowAdoptModal(true)
                       }}
                       className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-green-500/90 text-white px-4 py-2.5 text-xs font-black transition hover:bg-green-500 disabled:opacity-50"
-                      disabled={loading}
+                      disabled={loadingMap.adopt ?? false}
                     >
                       <CheckCircle2 size={14} />
                       Mark Adopted
@@ -165,7 +165,7 @@ export function PetCard({ pet, isOwner = false, onUpdate }: Props) {
                         setShowArchiveModal(true)
                       }}
                       className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-white/[0.08] text-white px-4 py-2.5 text-xs font-black transition hover:bg-white/[0.12] disabled:opacity-50"
-                      disabled={loading}
+                      disabled={loadingMap.archive ?? false}
                     >
                       <Archive size={14} />
                       Archive
@@ -180,7 +180,7 @@ export function PetCard({ pet, isOwner = false, onUpdate }: Props) {
                       setShowArchiveModal(true)
                     }}
                     className="w-full flex items-center justify-center gap-2 rounded-2xl bg-amber-500/90 text-white px-4 py-2.5 text-xs font-black transition hover:bg-amber-500 disabled:opacity-50"
-                    disabled={loading}
+                    disabled={loadingMap.archive ?? false}
                   >
                     <Sparkles size={14} />
                     Re-activate Listing
@@ -194,7 +194,7 @@ export function PetCard({ pet, isOwner = false, onUpdate }: Props) {
                       setShowArchiveModal(true)
                     }}
                     className="w-full flex items-center justify-center gap-2 rounded-2xl bg-white/[0.08] text-white px-4 py-2.5 text-xs font-black transition hover:bg-white/[0.12] disabled:opacity-50"
-                    disabled={loading}
+                    disabled={loadingMap.adopt ?? false}
                   >
                     <Archive size={14} />
                     Archive
@@ -207,7 +207,7 @@ export function PetCard({ pet, isOwner = false, onUpdate }: Props) {
                     setShowDeleteModal(true)
                   }}
                   className="w-full flex items-center justify-center gap-2 rounded-2xl bg-red-500/20 text-red-300 border border-red-500/40 px-4 py-2.5 text-xs font-black transition hover:bg-red-500/30 disabled:opacity-50"
-                  disabled={loading}
+                  disabled={loadingMap.delete ?? false}
                 >
                   <Trash2 size={14} />
                   Delete Permanently
@@ -233,7 +233,7 @@ export function PetCard({ pet, isOwner = false, onUpdate }: Props) {
         isOpen={showArchiveModal}
         onClose={() => setShowArchiveModal(false)}
         onConfirm={handleArchive}
-        loading={loading}
+        loading={loadingMap.archive ?? false}
       />
 
       <PetAdoptModal
@@ -241,7 +241,7 @@ export function PetCard({ pet, isOwner = false, onUpdate }: Props) {
         isOpen={showAdoptModal}
         onClose={() => setShowAdoptModal(false)}
         onConfirm={handleAdopt}
-        loading={loading}
+        loading={loadingMap.adopt ?? false}
       />
 
       <PetDeleteModal
@@ -249,7 +249,7 @@ export function PetCard({ pet, isOwner = false, onUpdate }: Props) {
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
-        loading={loading}
+        loading={loadingMap.delete ?? false}
       />
     </>
   )

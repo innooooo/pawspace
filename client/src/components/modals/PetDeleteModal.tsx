@@ -17,7 +17,7 @@ export function PetDeleteModal({ pet, isOpen, onClose, onConfirm, loading }: Pro
   const [error, setError] = useState('')
 
   const handleConfirm = async () => {
-    if (confirm !== pet.name) {
+    if (confirm.trim().toLowerCase() !== pet.name.trim().toLowerCase()) {
       setError(`Please type "${pet.name}" exactly to confirm`)
       return
     }
@@ -26,8 +26,8 @@ export function PetDeleteModal({ pet, isOpen, onClose, onConfirm, loading }: Pro
     setConfirm('')
   }
 
-  const isConfirmed = confirm === pet.name
-
+  console.log({ confirm, petName: pet.name, match: confirm === pet.name })
+  const isConfirmed = confirm.trim().toLowerCase() === pet.name.trim().toLowerCase()
   return (
     <AnimatePresence>
       {isOpen && (
