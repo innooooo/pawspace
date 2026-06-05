@@ -21,68 +21,87 @@ export interface UpdatePayload {
   is_neutered?: boolean
 }
 
+type ActionKey = 'archive' | 'adopt' | 'delete' | 'update'
+
+type PatchResult =
+  | { success: true; pet: Pet; message?: string }
+  | { success: false; error: string }
+
 export function usePetActions() {
-  const [loading, setLoading] = useState(false)
+  const [loadingMap, setLoadingMap] = useState<Partial<Record<ActionKey, boolean>>>({})
   const [error, setError] = useState<string | null>(null)
 
-  // Generic PATCH handler
-  const patchPet = useCallback(async (petId: string, body: Record<string, unknown>) => {
-    setLoading(true)
+  const setActionLoading = (action: ActionKey, val: boolean) =>
+    setLoadingMap(prev => ({ ...prev, [action]: val }))
+
+  const patchPet = useCallback(async (
+    action: ActionKey,
+    petId: string,
+    body: Record<string, unknown>
+  ): Promise<PatchResult> => {
+    setActionLoading(action, true)
     setError(null)
     try {
       const res = await api.patch(`/api/pets/${petId}`, body)
-      const data = res.data as { pet: Pet; message?: string; }
-      return { success: true as const, pet: data.pet, message: data.message }
+      const data = res.data as { pet: Pet; message?: string }
+      return { success: true, pet: data.pet, message: data.message }
     } catch (e) {
       const msg = getErrorMessage(e)
       setError(msg)
-      return { success: false as const, error: msg }
+      return { success: false, error: msg }
     } finally {
-      setLoading(false)
+      setActionLoading(action, false)
     }
   }, [])
 
-  // Edit fields (no action)
-  //const updatePet = useCallback(
-  //  async (petId: string, fields: UpdatePayload) => {
-  //    return patchPet(petId, fields)
-  //  },
-  //  [patchPet]
-  //)
-
-  // Archive / Re-activate (toggle)
-  const archivePet = useCallback(
-    async (petId: string) => {
-      return patchPet(petId, { action: 'archive' })
-    },
+  const updatePet = useCallback(
+    (petId: string, fields: UpdatePayload) =>
+      patchPet('update', petId, fields as Record<string, unknown>),
     [patchPet]
   )
 
-  // Adopt with optional note + photo
+  const archivePet = useCallback(
+    (petId: string, currentStatus: string) =>
+      patchPet('archive', petId, {
+        action: currentStatus === 'archived' ? 'reactivate' : 'archive',
+      }),
+    [patchPet]
+  )
+
   const adoptPet = useCallback(
-    async (petId: string, payload?: AdoptPayload) => {
+    (petId: string, payload?: AdoptPayload) => {
       const body: Record<string, unknown> = { action: 'adopt' }
       if (payload?.success_note) body.success_note = payload.success_note
       if (payload?.success_photo_url) body.success_photo_url = payload.success_photo_url
-      return patchPet(petId, body)
+      return patchPet('adopt', petId, body)
     },
     [patchPet]
   )
 
-  // Delete with confirmation
   const deletePet = useCallback(
-    async (petId: string) => {
-      return patchPet(petId, { action: 'delete', confirm: true })
+    async (petId: string): Promise<PatchResult> => {
+      setActionLoading('delete', true)
+      setError(null)
+      try {
+        const res = await api.delete(`/api/pets/${petId}`)
+        return { success: true, pet: res.data?.pet, message: res.data?.message }
+      } catch (e) {
+        const msg = getErrorMessage(e)
+        setError(msg)
+        return { success: false, error: msg }
+      } finally {
+        setActionLoading('delete', false)
+      }
     },
-    [patchPet]
+    []
   )
 
   return {
-    //updatePet,
+    updatePet,
     archivePet,
     adoptPet,
     deletePet,
-    loading,
+    loadingMap,
     error,
     clearError: () => setError(null),
   }

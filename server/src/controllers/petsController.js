@@ -129,6 +129,7 @@ async function listPets(req, res) {
   const offset = (page - 1) * PAGE_SIZE;
 
   const where = [];
+  where.push(`p.adoption_status != 'archived' `);
   const params = [];
   let i = 1;
 
@@ -183,7 +184,6 @@ async function listPets(req, res) {
 
     return ok(res, { pets: rows }, { page, limit: PAGE_SIZE, total, hasMore });
   } catch (err) {
-  console.error("🔥 FULL ERROR:", err);
   return fail(res, 500, err.message, err.stack);
 }
 }
@@ -247,7 +247,6 @@ async function listMyPets(req, res) {
     const hasMore = offset + rows.length < total;
     return ok(res, { pets: rows }, { page, limit: PAGE_SIZE, total, hasMore });
   } catch (err) {
-  console.error("🔥 FULL ERROR:", err);
   return fail(res, 500, err.message, err.stack);
 }
 }
@@ -287,9 +286,6 @@ async function getPet(req, res) {
 async function updatePet(req, res) {
   const { id } = req.params;
 
-  const errMsg = validatePetPayload(req.body, true);
-  if (errMsg) return fail(res, 400, errMsg);
-
   const action = req.body.action; // 'archive' | 'adopt' | 'delete' | undefined (normal edit)
   const allowedEditFields = [
     'name',
@@ -318,16 +314,6 @@ async function updatePet(req, res) {
       return fail(res, 403, 'You can only update your own pet listings.');
     }
 
-    // Handle delete action
-    if (action === 'delete') {
-      const confirm = req.body.confirm;
-      if (confirm !== true) {
-        return fail(res, 400, 'Confirmation required to delete a listing. Set confirm: true.');
-      }
-      await pool.query(`DELETE FROM pets WHERE id = $1`, [id]);
-      return ok(res, { message: 'Listing permanently deleted.' });
-    }
-
     // Handle archive action
     if (action === 'archive') {
       await pool.query(
@@ -336,6 +322,15 @@ async function updatePet(req, res) {
       );
       const { rows } = await pool.query(`SELECT * FROM pets WHERE id = $1`, [id]);
       return ok(res, { pet: rows[0], message: 'Listing archived.' });
+    }
+
+    //Handle listing reactivation
+    if (action === 'reactivate') {
+      const { rows } = await pool.query(
+        `UPDATE pets SET adoption_status = 'available' WHERE id = $1 RETURNING *`,
+        [id]
+      );
+      return ok(res, { pet: rows[0], message: 'Listing reactivated.' });
     }
 
     // Handle adopt action
@@ -352,7 +347,7 @@ async function updatePet(req, res) {
         `UPDATE pets 
          SET adoption_status = 'adopted', 
              success_note = $2, 
-             success_photo = $3 
+             success_photo_url = $3 
          WHERE id = $1 
          RETURNING *`,
         [id, successNote ?? null, successPhoto ?? null]
@@ -365,6 +360,9 @@ async function updatePet(req, res) {
     if (action != null && action !== 'edit') {
       return fail(res, 400, `Invalid action: ${action}. Use 'archive', 'adopt', 'delete', or omit for edit.`);
     }
+
+    const errMsg = validatePetPayload(req.body, true);
+    if (errMsg) return fail(res, 400, errMsg);
 
     // Build dynamic UPDATE for allowed fields
     const sets = [];
