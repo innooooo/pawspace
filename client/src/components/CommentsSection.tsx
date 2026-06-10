@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import api, { getErrorMessage } from '../api'
 import { Avatar } from './Avatar'
 import { useAuth } from '../hooks/useAuth'
