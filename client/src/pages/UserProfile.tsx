@@ -15,7 +15,7 @@ export interface NotificationPrefs {
 }
 
 export function UserProfile() {
-  const { user, token, logout } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [section, setSection] = useState<Section>('account')
 
