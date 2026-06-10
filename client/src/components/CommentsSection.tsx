@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import api, { getErrorMessage } from '../api'
 import { Avatar } from './Avatar'
 import { useAuth } from '../hooks/useAuth'
@@ -177,7 +177,7 @@ export function CommentsSection({ petId }: { petId: string }) {
   const [body, setBody] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
+  
   const fetchComments = useCallback(async () => {
     try {
       const res = await api.get(`/api/pets/${petId}/comments`)

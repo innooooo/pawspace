@@ -4,7 +4,7 @@ const { pool } = require('../config/db');
 const { ok, fail } = require('../utils/response');
 const { mapPgError } = require('../utils/dbErrors');
 const { NAIROBI_AREAS } = require('../utils/constants');
-const { notifyWelcome } = require('../routes/email');
+const { notifyWelcome } = require('../services/email');
 
 function publicUser(row) {
   if (!row) return null;
