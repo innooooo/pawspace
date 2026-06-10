@@ -2,8 +2,10 @@ const { pool } = require('../config/db');
 const { ok, fail } = require('../utils/response');
 const { mapPgError } = require('../utils/dbErrors');
 const { INTEREST_STATUS } = require('../utils/constants');
-const { notifyAdopterAccepted, notifyAdopterRejected } = require('../routes/email');
-const { notifyOwnerOfInterest } = require('../routes/email');
+const { notifyAdopterAccepted, notifyAdopterRejected } = require('../services/email');
+const { notifyOwnerOfInterest } = require('../services/email');
+const { createNotification } = require('./notificationsController');
+const { getUserEmailPrefs } = require('./notificationPreferencesController')
 
 async function expressInterest(req, res) {
   const petId = req.params.id;
@@ -36,18 +38,34 @@ async function expressInterest(req, res) {
     
     // Notify owner — fetch their info
     const ownerData = await pool.query(
-      `SELECT u.email, u.name FROM users u JOIN pets p ON p.owner_id = u.id WHERE p.id = $1`,
+      `SELECT u.id, u.email, u.name FROM users u JOIN pets p ON p.owner_id = u.id WHERE p.id = $1`,
       [petId]
-    );
+    )
+
     if (ownerData.rows[0]) {
-      notifyOwnerOfInterest({
-        ownerEmail: ownerData.rows[0].email,
-        ownerName: ownerData.rows[0].name,
-        adopterName: req.user.name,
-        petName: petResult.rows[0].name,
-        petId,
-        message,
-      });
+      const owner = ownerData.rows[0]
+
+      // In-app notification — always fires
+      void createNotification(owner.id, {
+        type: 'new_interest',
+        title: `Someone wants to adopt ${petResult.rows[0].name}`,
+        body: message ? `"${String(message).trim()}"` : null,
+        entityType: 'interest',
+        entityId: rows[0].id,
+      })
+
+      // Email — check owner's preferences first
+      const prefs = await getUserEmailPrefs(owner.id)
+      if (prefs.email_new_interest) {
+        void notifyOwnerOfInterest({
+          ownerEmail: owner.email,
+          ownerName: owner.name,
+          adopterName: req.user.name,
+          petName: petResult.rows[0].name,
+          petId,
+          message,
+        })
+      }
     }
     return ok(res, { interest: rows[0] }, null, 201);
   } catch (err) {
@@ -184,25 +202,37 @@ async function patchInterest(req, res) {
     }
 
     await client.query('COMMIT');
-    // Fire emails after commit — non-blocking
+
     if (nextStatus === 'accepted' || nextStatus === 'rejected') {
-      // Fetch adopter + owner + pet info for email
       const emailData = await pool.query(
         `SELECT
-           adopter.email AS adopter_email, adopter.name AS adopter_name,
-           owner.name AS owner_name, owner.email AS owner_email, owner.phone AS owner_phone,
-           p.name AS pet_name, p.id AS pet_id
-         FROM adoption_interests ai
-         JOIN users adopter ON adopter.id = ai.adopter_id
-         JOIN pets p ON p.id = ai.pet_id
-         JOIN users owner ON owner.id = p.owner_id
-         WHERE ai.id = $1`,
+          adopter.id AS adopter_id, adopter.email AS adopter_email, adopter.name AS adopter_name,
+          owner.id AS owner_id, owner.name AS owner_name, owner.email AS owner_email, owner.phone AS owner_phone,
+          p.name AS pet_name, p.id AS pet_id
+        FROM adoption_interests ai
+        JOIN users adopter ON adopter.id = ai.adopter_id
+        JOIN pets p ON p.id = ai.pet_id
+        JOIN users owner ON owner.id = p.owner_id
+        WHERE ai.id = $1`,
         [interestId]
-      );
-      const d = emailData.rows[0];
+      )
+      const d = emailData.rows[0]
       if (d) {
-        if (nextStatus === 'accepted') {
-          notifyAdopterAccepted({
+        // In-app notification to adopter — always fires
+        void createNotification(d.adopter_id, {
+          type: nextStatus === 'accepted' ? 'interest_accepted' : 'interest_rejected',
+          title: nextStatus === 'accepted'
+            ? `Your request to adopt ${d.pet_name} was accepted`
+            : `Update on your request to adopt ${d.pet_name}`,
+          body: nextStatus === 'accepted' ? `Contact ${d.owner_name} to arrange a meeting.` : null,
+          entityType: 'interest',
+          entityId: interestId,
+        })
+
+        // Email to adopter — check adopter's preferences
+        const adopterPrefs = await getUserEmailPrefs(d.adopter_id)
+        if (nextStatus === 'accepted' && adopterPrefs.email_interest_accepted) {
+          void notifyAdopterAccepted({
             adopterEmail: d.adopter_email,
             adopterName: d.adopter_name,
             ownerName: d.owner_name,
@@ -210,14 +240,10 @@ async function patchInterest(req, res) {
             ownerPhone: d.owner_phone,
             petName: d.pet_name,
             petId: d.pet_id,
-          });
-        } else {
-          notifyAdopterRejected({
-            adopterEmail: d.adopter_email,
-            adopterName: d.adopter_name,
-            petName: d.pet_name,
-            petId: d.pet_id,
-          });
+          })
+        } else if (nextStatus === 'rejected') {
+          // Rejected is in-app only per spec — no email regardless of prefs
+          // No action needed here
         }
       }
     }

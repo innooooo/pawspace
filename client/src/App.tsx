@@ -9,6 +9,8 @@ import MyPets from './pages/MyPets'
 import PetProfile from './pages/PetProfile'
 import PostPet from './pages/PostPet'
 import Register from './pages/Register'
+import {Favorites} from './pages/Favorites'
+import {UserProfile} from './pages/UserProfile'
 
 function Layout() {
   return (
@@ -30,6 +32,8 @@ export default function App() {
           <Route index element={<Navigate to="/feed" replace />} />
           <Route path="feed" element={<Feed />} />
           <Route path="login" element={<Login />} />
+          <Route path ="favorites" element ={<Favorites />} />
+          <Route path ="my-profile" element ={<UserProfile />} />
           <Route path="register" element={<Register />} />
           <Route path="pet/:id" element={<PetProfile />} />
           <Route

@@ -1,6 +1,8 @@
 const { pool } = require('../config/db');
 const { ok, fail } = require('../utils/response');
 const { mapPgError } = require('../utils/dbErrors');
+const { createNotification } = require('./notificationsController')
+const { getUserEmailPrefs } = require('./notificationPreferencesController')
 
 // GET /api/pets/:id/comments
 async function listComments(req, res) {
@@ -79,6 +81,31 @@ async function addComment(req, res) {
        WHERE c.id = $1`,
       [rows[0].id]
     );
+
+    // Notify pet owner when someone comments — skip if the commenter is the owner
+    const ownerResult = await pool.query(
+      `SELECT u.id, u.name, u.email, p.name AS pet_name
+      FROM pets p
+      JOIN users u ON u.id = p.owner_id
+      WHERE p.id = $1`,
+      [petId]
+    )
+    const owner = ownerResult.rows[0]
+
+    if (owner && owner.id !== req.user.id) {
+      // In-app — always fires
+      void createNotification(owner.id, {
+        type: 'new_comment',
+        title: `${req.user.name} commented on ${owner.pet_name}`,
+        body: String(body).trim().slice(0, 80) + (body.length > 80 ? '…' : ''),
+        entityType: 'pet',
+        entityId: petId,
+      })
+
+      // Email — respect owner preferences
+      // Comments aren't in the current email preference set, so no email for now.
+      // When you add email_new_comment to the prefs schema, wire it here.
+    }
 
     return ok(res, { comment: { ...full[0], replies: [] } }, null, 201);
   } catch (err) {

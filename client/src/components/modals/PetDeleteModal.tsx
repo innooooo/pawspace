@@ -26,7 +26,6 @@ export function PetDeleteModal({ pet, isOpen, onClose, onConfirm, loading }: Pro
     setConfirm('')
   }
 
-  console.log({ confirm, petName: pet.name, match: confirm === pet.name })
   const isConfirmed = confirm.trim().toLowerCase() === pet.name.trim().toLowerCase()
   return (
     <AnimatePresence>

@@ -15,7 +15,7 @@ import {
   Users,
   WandSparkles,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { NAIROBI_AREAS, SPECIES } from '../constants/nairobi'
 import { PetCard } from '../components/PetCard'
 import { FeedSkeletonGrid } from '../components/SkeletonCard'
@@ -95,6 +95,13 @@ export default function Feed() {
   const ar = useMemo(() => nairobi_area || undefined, [nairobi_area])
 
   const { pets, loading, loadingMore, error, loadMore, meta } = usePets(sp, st, ar, false)
+
+  useEffect(() => {
+    if (window.location.hash === '#explore-pets') {
+      const el = document.getElementById('explore-pets')
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [])
 
   return (
     <main className="relative isolate overflow-hidden pb-20">
@@ -344,7 +351,7 @@ export default function Feed() {
             </div>
           ) : (
             <>
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              <div id="explore-pets" className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {pets.map((p) => (
                   <PetCard key={p.id} pet={p} />
                 ))}

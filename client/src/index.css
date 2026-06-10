@@ -47,3 +47,56 @@
     text-wrap: balance;
   }
 }
+
+/* Light mode — default */
+:root {
+  --bg-base: #eef0f7;          /* cool blue-grey, not stark white */
+  --bg-surface: rgba(255,255,255,0.72);
+  --bg-surface-hover: rgba(255,255,255,0.90);
+  --bg-input: #ffffff;
+  --text-primary: #0f1221;
+  --text-secondary: rgba(15,18,33,0.64);
+  --text-muted: rgba(15,18,33,0.40);
+  --border-subtle: rgba(15,18,33,0.10);
+  --amber: #f59e0b;
+  --glass-bg: rgba(238,240,247,0.82);
+  --glass-border: rgba(15,18,33,0.08);
+}
+
+/* Dark mode */
+html.dark {
+  --bg-base: #060b1f;
+  --bg-surface: rgba(255,255,255,0.06);
+  --bg-surface-hover: rgba(255,255,255,0.10);
+  --bg-input: rgba(255,255,255,0.08);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255,255,255,0.72);
+  --text-muted: rgba(255,255,255,0.40);
+  --border-subtle: rgba(255,255,255,0.10);
+  --amber: #f59e0b;
+  --glass-bg: rgba(6,11,31,0.72);
+  --glass-border: rgba(255,255,255,0.10);
+}
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  transition: background-color 0.25s ease, color 0.2s ease;
+}
+
+input, select, textarea {
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+option {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+.glass-panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
