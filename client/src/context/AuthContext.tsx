@@ -27,6 +27,7 @@ type AuthContextValue = AuthState & {
     nairobi_area: string
   }) => Promise<void>
   logout: () => void
+  setUser: (user: User | null) => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -115,8 +116,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      setUser
     }),
-    [user, token, loading, login, register, logout]
+    [user, token, loading, login, register, logout, setUser]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

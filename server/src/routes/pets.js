@@ -12,6 +12,7 @@ router.post('/', requireAuth, pets.createPet);
 router.use('/:id/photos', photosRouter);
 router.use('/:id/interests', petInterests);
 router.use('/:id', likesRouter);
+router.use('/:id/comments', require('./comments'));
 router.get('/:id', pets.getPet);
 router.patch('/:id', requireAuth, pets.updatePet);
 router.delete('/:id', requireAuth, pets.deletePet);

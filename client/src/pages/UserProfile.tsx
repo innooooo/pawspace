@@ -1,5 +1,5 @@
 import { Camera, LogOut, Mail, MapPin, Phone, Bell, ChevronRight, PawPrint } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { Avatar } from '../components/Avatar'
@@ -8,56 +8,121 @@ import api, { unwrap, type ApiEnvelope } from '../api'
 type Section = 'account' | 'notifications'
 
 export interface NotificationPrefs {
-  email_new_interest: boolean;
-  email_interest_accepted: boolean;
-  email_new_message: boolean;
-  email_pet_likes_digest: boolean;
+  email_new_interest: boolean
+  email_interest_accepted: boolean
+  email_new_message: boolean
+  email_pet_likes_digest: boolean
+}
+
+const NAIROBI_AREAS = [
+  'Westlands', 'Kilimani', 'Karen', 'Lavington', 'Parklands',
+  'Kasarani', 'Embakasi', 'Langata', 'South B', 'South C',
+  'Kibera', 'Ruaka', 'Kileleshwa', 'Other',
+]
+
+const PREF_LABELS: { key: keyof NotificationPrefs; label: string; sub: string }[] = [
+  { key: 'email_new_interest',    label: 'New adoption interest',  sub: 'When someone wants to adopt your pet' },
+  { key: 'email_interest_accepted', label: 'Interest accepted',    sub: 'When your adoption request is approved' },
+  { key: 'email_new_message',     label: 'New message',            sub: 'Unread messages after 5 minutes' },
+  { key: 'email_pet_likes_digest', label: 'Daily likes digest',    sub: 'Summary of who liked your pets (off by default)' },
+]
+
+const PREF_DEFAULTS: NotificationPrefs = {
+  email_new_interest: true,
+  email_interest_accepted: true,
+  email_new_message: true,
+  email_pet_likes_digest: false,
 }
 
 export function UserProfile() {
-  const { user, logout } = useAuth()
+  const { user, logout, setUser } = useAuth()
   const navigate = useNavigate()
   const [section, setSection] = useState<Section>('account')
 
-  // Email notification prefs state — fetch from /api/users/me/notification-preferences
-  const [prefs, setPrefs] = useState({
-    email_new_interest: true,
-    email_interest_accepted: true,
-    email_new_message: true,
-    email_pet_likes_digest: false,
+  // Account
+  const [accountFields, setAccountFields] = useState({
+    name: user?.name ?? '',
+    phone: user?.phone ?? '',
+    nairobi_area: user?.nairobi_area ?? '',
   })
-  const [saving, setSaving] = useState(false)
-  const [saved, setSavedState] = useState(false)
+  const [accountError, setAccountError] = useState<string | null>(null)
+  const [accountSaving, setAccountSaving] = useState(false)
+  const [accountSaved, setAccountSaved] = useState(false)
 
-  const togglePref = (key: keyof typeof prefs) => {
-    setPrefs((p) => ({ ...p, [key]: !p[key] }))
-    setSavedState(false)
+  function validateAccount(): string | null {
+    if (!accountFields.name.trim()) return 'Display name is required.'
+    if (accountFields.phone && !/^\+?[0-9\s\-().]{7,20}$/.test(accountFields.phone)) {
+      return 'Enter a valid phone number.'
+    }
+    if (accountFields.nairobi_area && !NAIROBI_AREAS.includes(accountFields.nairobi_area)) {
+      return 'Select a valid Nairobi area.'
+    }
+    return null
   }
 
-  const savePrefs = async () => {
-  setSaving(true)
-  try {
-    const res = await api.patch<ApiEnvelope<{ preferences: NotificationPrefs }>>(
-      '/api/users/me/notification-preferences',
-      prefs  // axios sends this as JSON body automatically
+  async function saveAccount() {
+    setAccountError(null)
+    const err = validateAccount()
+    if (err) { setAccountError(err); return }
+
+    setAccountSaving(true)
+    try {
+      const res = await api.patch<ApiEnvelope<{ user: NonNullable<typeof user> }>>(
+        '/api/users/me',
+        accountFields
+      )
+      const updated = unwrap(res).user
+      setUser(updated)
+      setAccountFields({
+        name: updated.name ?? '',
+        phone: updated.phone ?? '',
+        nairobi_area: updated.nairobi_area ?? '',
+      })
+      setAccountSaved(true)
+      setTimeout(() => setAccountSaved(false), 3000)
+    } catch (e: any) {
+      setAccountError(e?.response?.data?.message ?? 'Failed to save. Try again.')
+    } finally {
+      setAccountSaving(false)
+    }
+  }
+
+  // Notifications
+  const [prefs, setPrefs] = useState<NotificationPrefs | null>(null)
+  const [prefSaving, setPrefSaving] = useState(false)
+  const [prefSaved, setPrefSaved] = useState(false)
+
+  useEffect(() => {
+    api.get<ApiEnvelope<{ preferences: NotificationPrefs }>>(
+      '/api/notification-preferences/me'
     )
-    setPrefs(unwrap(res).preferences)
-    setSavedState(true)
-  } catch {
-    // handle error
-  } finally {
-    setSaving(false)
+      .then(res => setPrefs(unwrap(res).preferences))
+      .catch(() => setPrefs(PREF_DEFAULTS))
+  }, [])
+
+  function togglePref(key: keyof NotificationPrefs) {
+    setPrefs(p => p ? { ...p, [key]: !p[key] } : p)
+    setPrefSaved(false)
   }
-}
+
+  async function savePrefs() {
+    if (!prefs) return
+    setPrefSaving(true)
+    try {
+      const res = await api.patch<ApiEnvelope<{ preferences: NotificationPrefs }>>(
+        '/api/notification-preferences/me',
+        prefs
+      )
+      setPrefs(unwrap(res).preferences)
+      setPrefSaved(true)
+    } catch {
+      // handle error
+    } finally {
+      setPrefSaving(false)
+    }
+  }
 
   if (!user) return null
-
-  const prefLabels: { key: keyof typeof prefs; label: string; sub: string }[] = [
-    { key: 'email_new_interest', label: 'New adoption interest', sub: 'When someone wants to adopt your pet' },
-    { key: 'email_interest_accepted', label: 'Interest accepted', sub: 'When your adoption request is approved' },
-    { key: 'email_new_message', label: 'New message', sub: 'Unread messages after 5 minutes' },
-    { key: 'email_pet_likes_digest', label: 'Daily likes digest', sub: 'Summary of who liked your pets (off by default)' },
-  ]
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
@@ -77,7 +142,9 @@ export function UserProfile() {
           </button>
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-xl font-black" style={{ color: 'var(--text-primary)' }}>{user.name}</h1>
+          <h1 className="truncate text-xl font-black" style={{ color: 'var(--text-primary)' }}>
+            {user.name}
+          </h1>
           <div className="mt-1 flex flex-wrap gap-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
             {user.email && (
               <span className="flex items-center gap-1"><Mail size={13} />{user.email}</span>
@@ -143,32 +210,68 @@ export function UserProfile() {
       {/* Account section */}
       {section === 'account' && (
         <div className="flex flex-col gap-3">
-          {/* Editable fields — wire to a PATCH /api/users/me endpoint */}
-          {[
-            { label: 'Display name', value: user.name, field: 'name' },
-            { label: 'Phone / WhatsApp', value: user.phone ?? '', field: 'phone' },
-            { label: 'Area in Nairobi', value: user.nairobi_area ?? '', field: 'nairobi_area' },
-          ].map(({ label, value, field }) => (
-            <div
-              key={field}
-              className="rounded-2xl px-4 py-3"
-              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+          <div
+            className="rounded-2xl px-4 py-3"
+            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+          >
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+              Display name
+            </label>
+            <input
+              value={accountFields.name}
+              onChange={(e) => setAccountFields(p => ({ ...p, name: e.target.value }))}
+              className="w-full bg-transparent text-sm font-semibold outline-none"
+              style={{ color: 'var(--text-primary)' }}
+            />
+          </div>
+
+          <div
+            className="rounded-2xl px-4 py-3"
+            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+          >
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+              Phone / WhatsApp
+            </label>
+            <input
+              value={accountFields.phone}
+              onChange={(e) => setAccountFields(p => ({ ...p, phone: e.target.value }))}
+              inputMode="tel"
+              className="w-full bg-transparent text-sm font-semibold outline-none"
+              style={{ color: 'var(--text-primary)' }}
+            />
+          </div>
+
+          <div
+            className="rounded-2xl px-4 py-3"
+            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+          >
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+              Area in Nairobi
+            </label>
+            <select
+              value={accountFields.nairobi_area}
+              onChange={(e) => setAccountFields(p => ({ ...p, nairobi_area: e.target.value }))}
+              className="w-full bg-transparent text-sm font-semibold outline-none"
+              style={{ color: accountFields.nairobi_area ? 'var(--text-primary)' : 'var(--text-muted)' }}
             >
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
-                {label}
-              </label>
-              <input
-                defaultValue={value}
-                className="w-full bg-transparent text-sm font-semibold outline-none"
-                style={{ color: 'var(--text-primary)' }}
-              />
-            </div>
-          ))}
+              <option value="" disabled>Select your area</option>
+              {NAIROBI_AREAS.map(area => (
+                <option key={area} value={area}>{area}</option>
+              ))}
+            </select>
+          </div>
+
+          {accountError && (
+            <p className="text-xs font-semibold text-red-500">{accountError}</p>
+          )}
+
           <button
             type="button"
-            className="mt-2 rounded-2xl bg-amber-400 py-3 text-sm font-black text-paw-ink hover:bg-amber-300"
+            onClick={saveAccount}
+            disabled={accountSaving}
+            className="mt-2 rounded-2xl bg-amber-400 py-3 text-sm font-black text-paw-ink hover:bg-amber-300 disabled:opacity-60"
           >
-            Save changes
+            {accountSaving ? 'Saving…' : accountSaved ? 'Saved' : 'Save changes'}
           </button>
 
           <button
@@ -186,42 +289,48 @@ export function UserProfile() {
       {/* Notifications section */}
       {section === 'notifications' && (
         <div className="flex flex-col gap-3">
-          <p className="mb-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            Email notifications — in-app notifications are always on.
-          </p>
-          {prefLabels.map(({ key, label, sub }) => (
-            <div
-              key={key}
-              className="flex items-center justify-between rounded-2xl px-4 py-4"
-              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
-            >
-              <div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{label}</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{sub}</p>
-              </div>
+          {!prefs ? (
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading…</p>
+          ) : (
+            <>
+              <p className="mb-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                Email notifications — in-app notifications are always on.
+              </p>
+              {PREF_LABELS.map(({ key, label, sub }) => (
+                <div
+                  key={key}
+                  className="flex items-center justify-between rounded-2xl px-4 py-4"
+                  style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+                >
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{label}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{sub}</p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={prefs[key]}
+                    onClick={() => togglePref(key)}
+                    className="relative h-6 w-11 shrink-0 rounded-full transition-colors"
+                    style={{ background: prefs[key] ? '#f59e0b' : 'var(--border-subtle)' }}
+                  >
+                    <span
+                      className="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform"
+                      style={{ left: prefs[key] ? '22px' : '2px' }}
+                    />
+                  </button>
+                </div>
+              ))}
               <button
                 type="button"
-                role="switch"
-                aria-checked={prefs[key]}
-                onClick={() => togglePref(key)}
-                className="relative h-6 w-11 shrink-0 rounded-full transition-colors"
-                style={{ background: prefs[key] ? '#f59e0b' : 'var(--border-subtle)' }}
+                onClick={savePrefs}
+                disabled={prefSaving}
+                className="mt-2 rounded-2xl bg-amber-400 py-3 text-sm font-black text-paw-ink hover:bg-amber-300 disabled:opacity-60"
               >
-                <span
-                  className="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform"
-                  style={{ left: prefs[key] ? '22px' : '2px' }}
-                />
+                {prefSaving ? 'Saving…' : prefSaved ? 'Saved' : 'Save preferences'}
               </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={savePrefs}
-            disabled={saving}
-            className="mt-2 rounded-2xl bg-amber-400 py-3 text-sm font-black text-paw-ink hover:bg-amber-300 disabled:opacity-60"
-          >
-            {saving ? 'Saving…' : saved ? 'Saved' : 'Save preferences'}
-          </button>
+            </>
+          )}
         </div>
       )}
     </div>

@@ -84,12 +84,12 @@ app.use('/uploads', express.static(uploadsDir));
  */
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/pets', require('./routes/pets'));
-app.use('/api/pets/:id/comments', require('./routes/comments'));
 app.use('/api/comments', require('./routes/comments'));
 app.use('/api/interests', interestPatch);
 app.use('/api/users', require('./routes/users'));
 app.use('/api/notifications', require('./routes/notifications'));
-app.use('/api/users', require('./routes/notificationPreferences'));
+app.use('/api/notification-preferences', require('./routes/notificationPreferences'));
+app.use('/api/favorites', require('./routes/favorites'));
 
 /**
  * =========================

@@ -184,6 +184,7 @@ async function listPets(req, res) {
 
     return ok(res, { pets: rows }, { page, limit: PAGE_SIZE, total, hasMore });
   } catch (err) {
+  console.error('listPets error:', err.message, err.code);
   return fail(res, 500, err.message, err.stack);
 }
 }

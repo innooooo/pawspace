@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import api, { unwrap, type ApiEnvelope } from '../api'
+import { useAuth } from './useAuth'
 
 export interface Notification {
   id: string
@@ -36,6 +37,7 @@ export function useNotifications(): UseNotificationsReturn {
   const [unread, setUnread] = useState(0)
   const [loading, setLoading] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const { token } = useAuth()
 
   // api instance already attaches the Bearer token via interceptor — no manual headers needed
   const fetchNotifications = useCallback(async () => {
@@ -55,14 +57,20 @@ export function useNotifications(): UseNotificationsReturn {
   }, [fetchNotifications])
 
   useEffect(() => {
+    if (!token) {
+      setNotifications([])
+      setUnread(0)
+      return
+    }
     setLoading(true)
     fetchNotifications().finally(() => setLoading(false))
 
     intervalRef.current = setInterval(fetchNotifications, POLL_INTERVAL)
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
+      intervalRef.current = null;
     }
-  }, [fetchNotifications])
+  }, [token, fetchNotifications])
 
   const markRead = useCallback(async (id: string) => {
     try {

@@ -201,7 +201,7 @@ export function Navbar() {
 
                   {bellOpen && (
                     <div
-                      className="absolute right-0 top-14 z-50 w-80 overflow-hidden rounded-2xl shadow-xl"
+                      className="absolute right-0 top-14 z-50 w-80 overflow-hidden rounded-2xl shadow-xl sm:right-0 max-sm:fixed max-sm:left-1/2 max-sm:-translate-x-1/2 max-sm:top-[88px] max-sm:w-[calc(100vw-24px)]"
                       style={{
                         background: 'var(--glass-bg)',
                         border: '1px solid var(--glass-border)',
