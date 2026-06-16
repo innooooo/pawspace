@@ -1,7 +1,7 @@
 import { Heart, MessageCircle, PawPrint, MapPin, ChevronRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
+import api, { unwrap, type ApiEnvelope } from '../api'
 
 type Tab = 'saved' | 'interests' | 'commented'
 
@@ -27,13 +27,19 @@ interface SavedPet {
   pet: Pet
 }
 
+interface CommentedPet {
+  id: string
+  last_commented_at: string
+  pet: Pet
+}
+
 const STATUS_STYLES: Record<string, string> = {
-  pending: 'bg-amber-400/20 text-amber-400',
-  accepted: 'bg-emerald-400/20 text-emerald-400',
-  rejected: 'bg-red-400/20 text-red-400',
-  available: 'bg-emerald-400/20 text-emerald-400',
+  pending:          'bg-amber-400/20 text-amber-400',
+  accepted:         'bg-emerald-400/20 text-emerald-400',
+  rejected:         'bg-red-400/20 text-red-400',
+  available:        'bg-emerald-400/20 text-emerald-400',
   pending_adoption: 'bg-amber-400/20 text-amber-400',
-  adopted: 'bg-[var(--bg-surface)] text-[var(--text-muted)]',
+  adopted:          'bg-[var(--bg-surface)] text-[var(--text-muted)]',
 }
 
 function PetCard({ pet, meta }: { pet: Pet; meta: React.ReactNode }) {
@@ -61,16 +67,20 @@ function PetCard({ pet, meta }: { pet: Pet; meta: React.ReactNode }) {
         </div>
         <div className="mt-2">{meta}</div>
       </div>
-      <ChevronRight size={16} style={{ color: 'var(--text-muted)' }} className="shrink-0 transition-transform group-hover:translate-x-1" />
+      <ChevronRight
+        size={16}
+        style={{ color: 'var(--text-muted)' }}
+        className="shrink-0 transition-transform group-hover:translate-x-1"
+      />
     </Link>
   )
 }
 
 function EmptyState({ tab }: { tab: Tab }) {
   const copy = {
-    saved: { title: 'No saved pets yet', sub: 'Heart a pet on the feed to save it here.', cta: 'Browse pets', to: '/feed' },
+    saved:     { title: 'No saved pets yet',                         sub: 'Heart a pet on the feed to save it here.',          cta: 'Browse pets', to: '/feed' },
     interests: { title: "You haven't expressed interest in any pet", sub: 'Find a pet you love and send an adoption request.', cta: 'Browse pets', to: '/feed' },
-    commented: { title: 'No commented pets yet', sub: 'Leave a comment on a pet listing to see it here.', cta: 'Browse pets', to: '/feed' },
+    commented: { title: 'No commented pets yet',                     sub: 'Leave a comment on a pet listing to see it here.',  cta: 'Browse pets', to: '/feed' },
   }[tab]
 
   return (
@@ -90,36 +100,58 @@ function EmptyState({ tab }: { tab: Tab }) {
   )
 }
 
+function Spinner() {
+  return (
+    <div className="flex justify-center py-16">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
+    </div>
+  )
+}
+
 export function Favorites() {
-  const { token } = useAuth()
-  const [tab, setTab] = useState<Tab>('saved')
-  const [interests, setInterests] = useState<Interest[]>([])
-  const [saved, setSaved] = useState<SavedPet[]>([])
-  const [loading, setLoading] = useState(false)
+  const [tab, setTab]             = useState<Tab>('saved')
+  const [loading, setLoading]     = useState(false)
+  const [saved, setSaved]         = useState<SavedPet[] | null>(null)
+  const [interests, setInterests] = useState<Interest[] | null>(null)
+  const [commented, setCommented] = useState<CommentedPet[] | null>(null)
 
   useEffect(() => {
-    if (!token) return
+    if (tab === 'saved'     && saved     !== null) return
+    if (tab === 'interests' && interests !== null) return
+    if (tab === 'commented' && commented !== null) return
+
     setLoading(true)
 
-    const headers = { Authorization: `Bearer ${token}` }
+    const fetchers: Record<Tab, () => Promise<void>> = {
+      saved: async () => {
+        const res = await api.get<ApiEnvelope<{ pets: SavedPet[] }>>('/api/favorites/saved')
+        setSaved(unwrap(res).pets)
+      },
+      interests: async () => {
+        const res = await api.get<ApiEnvelope<{ interests: Interest[] }>>('/api/favorites/interests')
+        setInterests(unwrap(res).interests)
+      },
+      commented: async () => {
+        const res = await api.get<ApiEnvelope<{ pets: CommentedPet[] }>>('/api/favorites/commented')
+        setCommented(unwrap(res).pets)
+      },
+    }
 
-    Promise.all([
-      fetch('/api/me/interests', { headers }).then((r) => r.json()),
-      fetch('/api/users/me/saved-pets', { headers }).then((r) => r.json()),
-      // commented pets: add endpoint when ready
-    ])
-      .then(([interestsData, savedData]) => {
-        setInterests(interestsData?.data?.interests ?? [])
-        setSaved(savedData?.data?.pets ?? [])
-      })
+    fetchers[tab]()
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [token])
+  }, [tab])
 
-  const tabs: { key: Tab; label: string; icon: React.ReactNode; count: number }[] = [
-    { key: 'saved', label: 'Saved', icon: <Heart size={15} />, count: saved.length },
-    { key: 'interests', label: 'Interests', icon: <PawPrint size={15} />, count: interests.length },
-    { key: 'commented', label: 'Commented', icon: <MessageCircle size={15} />, count: 0 },
+  const counts = {
+    saved:     saved?.length     ?? 0,
+    interests: interests?.length ?? 0,
+    commented: commented?.length ?? 0,
+  }
+
+  const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
+    { key: 'saved',     label: 'Saved',     icon: <Heart size={15} /> },
+    { key: 'interests', label: 'Interests', icon: <PawPrint size={15} /> },
+    { key: 'commented', label: 'Commented', icon: <MessageCircle size={15} /> },
   ]
 
   return (
@@ -129,11 +161,7 @@ export function Favorites() {
         Pets you've saved, applied for, or commented on.
       </p>
 
-      {/* Tabs */}
-      <div
-        className="mb-6 flex gap-1 rounded-2xl p-1"
-        style={{ background: 'var(--bg-surface)' }}
-      >
+      <div className="mb-6 flex gap-1 rounded-2xl p-1" style={{ background: 'var(--bg-surface)' }}>
         {tabs.map((t) => (
           <button
             key={t.key}
@@ -148,24 +176,19 @@ export function Favorites() {
           >
             {t.icon}
             {t.label}
-            {t.count > 0 && (
+            {counts[t.key] > 0 && (
               <span className="rounded-full bg-amber-400/20 px-1.5 py-0.5 text-[11px] font-black text-amber-400">
-                {t.count}
+                {counts[t.key]}
               </span>
             )}
           </button>
         ))}
       </div>
 
-      {/* Content */}
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
-        </div>
-      ) : (
+      {loading ? <Spinner /> : (
         <div className="flex flex-col gap-3">
           {tab === 'saved' && (
-            saved.length === 0
+            !saved || saved.length === 0
               ? <EmptyState tab="saved" />
               : saved.map((s) => (
                   <PetCard
@@ -181,7 +204,7 @@ export function Favorites() {
           )}
 
           {tab === 'interests' && (
-            interests.length === 0
+            !interests || interests.length === 0
               ? <EmptyState tab="interests" />
               : interests.map((i) => (
                   <PetCard
@@ -196,7 +219,21 @@ export function Favorites() {
                 ))
           )}
 
-          {tab === 'commented' && <EmptyState tab="commented" />}
+          {tab === 'commented' && (
+            !commented || commented.length === 0
+              ? <EmptyState tab="commented" />
+              : commented.map((c) => (
+                  <PetCard
+                    key={c.id}
+                    pet={c.pet}
+                    meta={
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        Commented {new Date(c.last_commented_at).toLocaleDateString()}
+                      </span>
+                    }
+                  />
+                ))
+          )}
         </div>
       )}
     </div>

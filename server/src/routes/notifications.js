@@ -9,7 +9,5 @@ router.get('/', requireAuth, listNotifications);
 router.patch('/read-all', requireAuth, markAllRead);
 router.patch('/:id/read', requireAuth, markRead);
 
-router.get('/users/me/notification-preferences', requireAuth, getPreferences);
-router.patch('/users/me/notification-preferences', requireAuth, updatePreferences);
 
 module.exports = router
